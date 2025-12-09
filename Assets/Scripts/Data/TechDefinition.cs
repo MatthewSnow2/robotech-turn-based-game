@@ -3,21 +3,9 @@ using UnityEngine;
 
 namespace Robotech.TBS.Data
 {
-    public enum TechGeneration
-    {
-        Gen0,  // Initial/Starting era
-        Gen1,  // Early game
-        Gen2,  // Mid game
-        Gen3   // Late game
-    }
-
-    public enum TechCategory
-    {
-        Military,
-        Science,
-        Infrastructure,
-        Special
-    }
+    // Note: TechGeneration and TechCategory enums are defined in separate files:
+    // - TechGeneration.cs (Gen0-Gen5)
+    // - TechCategory.cs (Power, Mecha, Weapons, Defense, Aerospace, Special)
 
     [CreateAssetMenu(fileName = "TechDefinition", menuName = "Robotech/Data/Tech Definition", order = 10)]
     public class TechDefinition : ScriptableObject
@@ -142,11 +130,5 @@ namespace Robotech.TBS.Data
         /// Icon displayed in the tech tree UI and research panels.
         /// </summary>
         public Sprite icon;
-
-        // Legacy unlock flags for prototype (deprecated, kept for backward compatibility)
-        public bool unlockArmoredVeritech;
-        public bool unlockSuperVeritech;
-        public bool unlockECMBonus;
-        public bool unlockAABonus;
     }
 }

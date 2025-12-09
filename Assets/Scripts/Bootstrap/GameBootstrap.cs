@@ -8,6 +8,7 @@ using Robotech.TBS.Data;
 using Robotech.TBS.Units;
 using Robotech.TBS.Core;
 using Robotech.TBS.Rendering;
+using Robotech.TBS.AI;
 
 namespace Robotech.TBS.Bootstrap
 {
@@ -21,6 +22,8 @@ namespace Robotech.TBS.Bootstrap
         public TurnManager turnManager;
         public CityManager cityManager;
         public TechManager techManager;
+        public UnitRegistry unitRegistry;
+        public AIController aiController;
 
         [Header("Runtime Unit Defs (temp)")]
         public UnitDefinition rdfVF1A;
@@ -41,6 +44,15 @@ namespace Robotech.TBS.Bootstrap
             if (turnManager == null) turnManager = gameObject.AddComponent<TurnManager>();
             if (cityManager == null) cityManager = gameObject.AddComponent<CityManager>();
             if (techManager == null) techManager = gameObject.AddComponent<TechManager>();
+            if (unitRegistry == null) unitRegistry = gameObject.AddComponent<UnitRegistry>();
+            if (aiController == null)
+            {
+                aiController = gameObject.AddComponent<AIController>();
+                aiController.grid = grid;
+                aiController.techManager = techManager;
+                aiController.cityManager = cityManager;
+                aiController.mapGen = mapGen;
+            }
             // Auto-add debug renderer for quick visualization
             var debugRenderer = gameObject.AddComponent<HexDebugRenderer>();
             debugRenderer.grid = grid;
@@ -228,16 +240,22 @@ namespace Robotech.TBS.Bootstrap
         private void OnTurnStarted(int turn)
         {
             // Reset unit moves and refresh visibility for the simple prototype
-            foreach (var unit in FindObjectsOfType<Unit>())
+            if (UnitRegistry.Instance != null)
             {
-                unit.NewTurn();
+                foreach (var unit in UnitRegistry.Instance.GetAllUnits())
+                {
+                    unit.NewTurn();
+                }
             }
+
             // Recompute visibility from all RDF units for demo
             fog.ClearVisibility();
-            foreach (var unit in FindObjectsOfType<Unit>())
+            if (UnitRegistry.Instance != null)
             {
-                if (unit.definition.faction == Faction.RDF)
+                foreach (var unit in UnitRegistry.Instance.GetUnitsByFaction(Faction.RDF))
+                {
                     fog.RevealFrom(unit.coord, unit.definition.vision);
+                }
             }
 
             // City yields, border growth, and research progress
@@ -251,10 +269,10 @@ namespace Robotech.TBS.Bootstrap
             }
 
             // Apply unit upkeep (protoculture)
-            if (resources != null)
+            if (resources != null && UnitRegistry.Instance != null)
             {
                 int totalUpkeep = 0;
-                foreach (var unit in FindObjectsOfType<Unit>())
+                foreach (var unit in UnitRegistry.Instance.GetAllUnits())
                 {
                     if (unit != null && unit.definition != null)
                         totalUpkeep += unit.definition.upkeepProtoculture;

@@ -1,6 +1,7 @@
 using UnityEngine;
 using System;
 using System.Collections;
+using Robotech.TBS.AI;
 
 namespace Robotech.TBS.Core
 {
@@ -55,11 +56,32 @@ namespace Robotech.TBS.Core
         [SerializeField]
         private float aiThinkingDelay = 0.5f;
 
+        /// <summary>
+        /// Whether to wait for AIController to signal completion before ending AI phase.
+        /// </summary>
+        [SerializeField]
+        private bool waitForAIController = true;
+
+        private bool aiPhaseComplete = false;
+
         void Start()
         {
+            // Subscribe to AI completion event
+            AIController.OnAIPhaseComplete += OnAIComplete;
+
             // Initialize the first turn
             OnTurnStarted?.Invoke(TurnNumber);
             OnPhaseChanged?.Invoke(CurrentPhase);
+        }
+
+        void OnDestroy()
+        {
+            AIController.OnAIPhaseComplete -= OnAIComplete;
+        }
+
+        private void OnAIComplete()
+        {
+            aiPhaseComplete = true;
         }
 
         /// <summary>
@@ -90,17 +112,37 @@ namespace Robotech.TBS.Core
         {
             // Transition to AI phase
             CurrentPhase = TurnPhase.AI;
+            aiPhaseComplete = false;
             OnPhaseChanged?.Invoke(CurrentPhase);
 
             // Allow UI to update before AI acts
             yield return null;
 
-            // Simulate AI "thinking" time
-            // TODO: Replace with actual AI logic when implemented
-            yield return new WaitForSeconds(aiThinkingDelay);
+            // Wait for AIController to complete (if enabled)
+            if (waitForAIController)
+            {
+                // Give AIController time to receive the phase change event and start processing
+                yield return new WaitForSeconds(0.1f);
 
-            // AI actions would go here
-            // For now, immediately end AI phase (stub AI)
+                // Wait for AI to signal completion
+                float timeout = 30f; // Maximum wait time
+                float elapsed = 0f;
+                while (!aiPhaseComplete && elapsed < timeout)
+                {
+                    yield return new WaitForSeconds(0.1f);
+                    elapsed += 0.1f;
+                }
+
+                if (!aiPhaseComplete)
+                {
+                    Debug.LogWarning("[TurnManager] AI phase timed out!");
+                }
+            }
+            else
+            {
+                // Fallback: just use the thinking delay
+                yield return new WaitForSeconds(aiThinkingDelay);
+            }
 
             // End the AI phase (non-recursively)
             EndPhase();

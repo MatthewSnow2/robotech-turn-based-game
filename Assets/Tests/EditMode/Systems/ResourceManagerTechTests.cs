@@ -86,7 +86,7 @@ namespace Robotech.TBS.Tests.EditMode.Systems
         public void ApplyTechBonus_WithProtoculturePerTurn_AddsCorrectAmount()
         {
             // Arrange
-            var tech = DefinitionsFactory.CreateTech("tech_proto", "Protoculture Tech", 100, TechGeneration.Gen0, TechCategory.Infrastructure, "Desc")
+            var tech = DefinitionsFactory.CreateTech("tech_proto", "Protoculture Tech", 100, TechGeneration.Gen0, TechCategory.Power, "Desc")
                 .WithYieldBonus(protoculture: 5, science: 0, production: 0);
 
             // Act
@@ -100,7 +100,7 @@ namespace Robotech.TBS.Tests.EditMode.Systems
         public void ApplyTechBonus_WithSciencePerTurn_AddsCorrectAmount()
         {
             // Arrange
-            var tech = DefinitionsFactory.CreateTech("tech_sci", "Science Tech", 100, TechGeneration.Gen0, TechCategory.Science, "Desc")
+            var tech = DefinitionsFactory.CreateTech("tech_sci", "Science Tech", 100, TechGeneration.Gen0, TechCategory.Power, "Desc")
                 .WithYieldBonus(protoculture: 0, science: 10, production: 0);
 
             // Act
@@ -114,7 +114,7 @@ namespace Robotech.TBS.Tests.EditMode.Systems
         public void ApplyTechBonus_WithProductionPerTurn_AddsCorrectAmount()
         {
             // Arrange
-            var tech = DefinitionsFactory.CreateTech("tech_prod", "Production Tech", 100, TechGeneration.Gen0, TechCategory.Infrastructure, "Desc")
+            var tech = DefinitionsFactory.CreateTech("tech_prod", "Production Tech", 100, TechGeneration.Gen0, TechCategory.Power, "Desc")
                 .WithYieldBonus(protoculture: 0, science: 0, production: 15);
 
             // Act
@@ -128,7 +128,7 @@ namespace Robotech.TBS.Tests.EditMode.Systems
         public void ApplyTechBonus_WithMultipleBonuses_AddsAllCorrectly()
         {
             // Arrange
-            var tech = DefinitionsFactory.CreateTech("tech_multi", "Multi Bonus Tech", 100, TechGeneration.Gen0, TechCategory.Infrastructure, "Desc")
+            var tech = DefinitionsFactory.CreateTech("tech_multi", "Multi Bonus Tech", 100, TechGeneration.Gen0, TechCategory.Power, "Desc")
                 .WithYieldBonus(protoculture: 5, science: 10, production: 15);
 
             // Act
@@ -144,7 +144,7 @@ namespace Robotech.TBS.Tests.EditMode.Systems
         public void ApplyTechBonus_WithZeroBonuses_DoesNotChangeBonuses()
         {
             // Arrange
-            var tech = DefinitionsFactory.CreateTech("tech_zero", "Zero Bonus Tech", 100, TechGeneration.Gen0, TechCategory.Military, "Desc")
+            var tech = DefinitionsFactory.CreateTech("tech_zero", "Zero Bonus Tech", 100, TechGeneration.Gen0, TechCategory.Mecha, "Desc")
                 .WithYieldBonus(protoculture: 0, science: 0, production: 0);
 
             // Act
@@ -168,9 +168,9 @@ namespace Robotech.TBS.Tests.EditMode.Systems
         public void ApplyTechBonus_MultipleTimes_BonusesStack()
         {
             // Arrange
-            var tech1 = DefinitionsFactory.CreateTech("tech1", "Tech 1", 100, TechGeneration.Gen0, TechCategory.Infrastructure, "Desc")
+            var tech1 = DefinitionsFactory.CreateTech("tech1", "Tech 1", 100, TechGeneration.Gen0, TechCategory.Power, "Desc")
                 .WithYieldBonus(protoculture: 5, science: 10, production: 15);
-            var tech2 = DefinitionsFactory.CreateTech("tech2", "Tech 2", 100, TechGeneration.Gen1, TechCategory.Science, "Desc")
+            var tech2 = DefinitionsFactory.CreateTech("tech2", "Tech 2", 100, TechGeneration.Gen1, TechCategory.Power, "Desc")
                 .WithYieldBonus(protoculture: 3, science: 7, production: 12);
 
             // Act
@@ -189,7 +189,7 @@ namespace Robotech.TBS.Tests.EditMode.Systems
             // Arrange
             // Note: This test documents current behavior - bonuses would stack if tech is researched twice
             // In practice, TechManager prevents researching same tech twice
-            var tech = DefinitionsFactory.CreateTech("tech", "Tech", 100, TechGeneration.Gen0, TechCategory.Infrastructure, "Desc")
+            var tech = DefinitionsFactory.CreateTech("tech", "Tech", 100, TechGeneration.Gen0, TechCategory.Power, "Desc")
                 .WithYieldBonus(protoculture: 5, science: 10, production: 15);
 
             // Act
@@ -270,9 +270,9 @@ namespace Robotech.TBS.Tests.EditMode.Systems
         public void CalculateTotalPerTurn_WithMultipleTechBonuses_ReturnsSum()
         {
             // Arrange
-            var tech1 = DefinitionsFactory.CreateTech("tech1", "Tech 1", 100, TechGeneration.Gen0, TechCategory.Infrastructure, "Desc")
+            var tech1 = DefinitionsFactory.CreateTech("tech1", "Tech 1", 100, TechGeneration.Gen0, TechCategory.Power, "Desc")
                 .WithYieldBonus(protoculture: 5, science: 10, production: 15);
-            var tech2 = DefinitionsFactory.CreateTech("tech2", "Tech 2", 100, TechGeneration.Gen1, TechCategory.Science, "Desc")
+            var tech2 = DefinitionsFactory.CreateTech("tech2", "Tech 2", 100, TechGeneration.Gen1, TechCategory.Power, "Desc")
                 .WithYieldBonus(protoculture: 3, science: 7, production: 12);
 
             resourceManager.ApplyTechBonus(tech1);
@@ -410,7 +410,7 @@ namespace Robotech.TBS.Tests.EditMode.Systems
         public void Integration_TechCompletion_AppliesBonusAndIncome()
         {
             // Arrange
-            var tech = DefinitionsFactory.CreateTech("tech_integration", "Integration Tech", 100, TechGeneration.Gen0, TechCategory.Infrastructure, "Desc")
+            var tech = DefinitionsFactory.CreateTech("tech_integration", "Integration Tech", 100, TechGeneration.Gen0, TechCategory.Power, "Desc")
                 .WithYieldBonus(protoculture: 5, science: 10, production: 15);
 
             int initialProtocolture = resourceManager.protoculture;
@@ -435,9 +435,9 @@ namespace Robotech.TBS.Tests.EditMode.Systems
         public void Integration_MultipleTechs_StackBonusesCorrectly()
         {
             // Arrange
-            var tech1 = DefinitionsFactory.CreateTech("tech1", "Tech 1", 100, TechGeneration.Gen0, TechCategory.Infrastructure, "Desc")
+            var tech1 = DefinitionsFactory.CreateTech("tech1", "Tech 1", 100, TechGeneration.Gen0, TechCategory.Power, "Desc")
                 .WithYieldBonus(protoculture: 5, science: 10, production: 15);
-            var tech2 = DefinitionsFactory.CreateTech("tech2", "Tech 2", 100, TechGeneration.Gen1, TechCategory.Science, "Desc")
+            var tech2 = DefinitionsFactory.CreateTech("tech2", "Tech 2", 100, TechGeneration.Gen1, TechCategory.Power, "Desc")
                 .WithYieldBonus(protoculture: 3, science: 7, production: 12);
 
             int initialProtocolture = resourceManager.protoculture;

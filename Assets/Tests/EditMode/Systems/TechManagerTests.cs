@@ -37,7 +37,7 @@ namespace Robotech.TBS.Tests.EditMode.Systems
                 "Basic Tech",
                 100,
                 TechGeneration.Gen0,
-                TechCategory.Military,
+                TechCategory.Mecha,
                 "A basic technology"
             );
 
@@ -47,7 +47,7 @@ namespace Robotech.TBS.Tests.EditMode.Systems
             Assert.AreEqual("Basic Tech", tech.displayName);
             Assert.AreEqual(100, tech.costScience);
             Assert.AreEqual(TechGeneration.Gen0, tech.generation);
-            Assert.AreEqual(TechCategory.Military, tech.category);
+            Assert.AreEqual(TechCategory.Mecha, tech.category);
             Assert.AreEqual("A basic technology", tech.description);
             Assert.IsFalse(tech.isCriticalPath);
             Assert.IsFalse(tech.allowsEraTransition);
@@ -62,7 +62,7 @@ namespace Robotech.TBS.Tests.EditMode.Systems
                 "Advanced Tech",
                 200,
                 TechGeneration.Gen1,
-                TechCategory.Science,
+                TechCategory.Power,
                 "An advanced technology",
                 icon: null,
                 isCriticalPath: true,
@@ -84,7 +84,7 @@ namespace Robotech.TBS.Tests.EditMode.Systems
                 "Test Tech",
                 50,
                 TechGeneration.Gen0,
-                TechCategory.Infrastructure,
+                TechCategory.Power,
                 "Test description"
             );
 
@@ -103,11 +103,11 @@ namespace Robotech.TBS.Tests.EditMode.Systems
         public void CreateTech_WithPrerequisites_AddsPrerequisitesCorrectly()
         {
             // Arrange
-            var prereq1 = DefinitionsFactory.CreateTech("prereq1", "Prerequisite 1", 50, TechGeneration.Gen0, TechCategory.Military, "Desc");
-            var prereq2 = DefinitionsFactory.CreateTech("prereq2", "Prerequisite 2", 50, TechGeneration.Gen0, TechCategory.Science, "Desc");
+            var prereq1 = DefinitionsFactory.CreateTech("prereq1", "Prerequisite 1", 50, TechGeneration.Gen0, TechCategory.Mecha, "Desc");
+            var prereq2 = DefinitionsFactory.CreateTech("prereq2", "Prerequisite 2", 50, TechGeneration.Gen0, TechCategory.Power, "Desc");
 
             // Act
-            var tech = DefinitionsFactory.CreateTech("tech_test", "Test Tech", 100, TechGeneration.Gen1, TechCategory.Military, "Desc")
+            var tech = DefinitionsFactory.CreateTech("tech_test", "Test Tech", 100, TechGeneration.Gen1, TechCategory.Mecha, "Desc")
                 .WithPrerequisites(prereq1, prereq2);
 
             // Assert
@@ -120,7 +120,7 @@ namespace Robotech.TBS.Tests.EditMode.Systems
         public void CreateTech_WithYieldBonus_SetsYieldValues()
         {
             // Arrange & Act
-            var tech = DefinitionsFactory.CreateTech("tech_test", "Test Tech", 100, TechGeneration.Gen0, TechCategory.Science, "Desc")
+            var tech = DefinitionsFactory.CreateTech("tech_test", "Test Tech", 100, TechGeneration.Gen0, TechCategory.Power, "Desc")
                 .WithYieldBonus(protoculture: 5, science: 10, production: 15);
 
             // Assert
@@ -133,7 +133,7 @@ namespace Robotech.TBS.Tests.EditMode.Systems
         public void CreateTech_WithUnitBonuses_SetsBonusValues()
         {
             // Arrange & Act
-            var tech = DefinitionsFactory.CreateTech("tech_test", "Test Tech", 100, TechGeneration.Gen0, TechCategory.Military, "Desc")
+            var tech = DefinitionsFactory.CreateTech("tech_test", "Test Tech", 100, TechGeneration.Gen0, TechCategory.Mecha, "Desc")
                 .WithUnitBonuses(hp: 10, armor: 2, movement: 1, attack: 5);
 
             // Assert
@@ -151,7 +151,7 @@ namespace Robotech.TBS.Tests.EditMode.Systems
         public void IsTechAvailable_WithNoPrerequisites_ReturnsTrue()
         {
             // Arrange
-            var tech = DefinitionsFactory.CreateTech("tech_basic", "Basic Tech", 50, TechGeneration.Gen0, TechCategory.Military, "Desc");
+            var tech = DefinitionsFactory.CreateTech("tech_basic", "Basic Tech", 50, TechGeneration.Gen0, TechCategory.Mecha, "Desc");
             techManager.allTechs.Add(tech);
 
             // Act
@@ -165,8 +165,8 @@ namespace Robotech.TBS.Tests.EditMode.Systems
         public void IsTechAvailable_WithUnmetPrerequisites_ReturnsFalse()
         {
             // Arrange
-            var prereq = DefinitionsFactory.CreateTech("prereq", "Prerequisite", 50, TechGeneration.Gen0, TechCategory.Military, "Desc");
-            var tech = DefinitionsFactory.CreateTech("tech_advanced", "Advanced Tech", 100, TechGeneration.Gen1, TechCategory.Military, "Desc")
+            var prereq = DefinitionsFactory.CreateTech("prereq", "Prerequisite", 50, TechGeneration.Gen0, TechCategory.Mecha, "Desc");
+            var tech = DefinitionsFactory.CreateTech("tech_advanced", "Advanced Tech", 100, TechGeneration.Gen1, TechCategory.Mecha, "Desc")
                 .WithPrerequisites(prereq);
 
             techManager.allTechs.Add(prereq);
@@ -183,8 +183,8 @@ namespace Robotech.TBS.Tests.EditMode.Systems
         public void IsTechAvailable_WithMetPrerequisites_ReturnsTrue()
         {
             // Arrange
-            var prereq = DefinitionsFactory.CreateTech("prereq", "Prerequisite", 50, TechGeneration.Gen0, TechCategory.Military, "Desc");
-            var tech = DefinitionsFactory.CreateTech("tech_advanced", "Advanced Tech", 100, TechGeneration.Gen1, TechCategory.Military, "Desc")
+            var prereq = DefinitionsFactory.CreateTech("prereq", "Prerequisite", 50, TechGeneration.Gen0, TechCategory.Mecha, "Desc");
+            var tech = DefinitionsFactory.CreateTech("tech_advanced", "Advanced Tech", 100, TechGeneration.Gen1, TechCategory.Mecha, "Desc")
                 .WithPrerequisites(prereq);
 
             techManager.allTechs.Add(prereq);
@@ -202,9 +202,9 @@ namespace Robotech.TBS.Tests.EditMode.Systems
         public void IsTechAvailable_WithMultiplePrerequisites_RequiresAllMet()
         {
             // Arrange
-            var prereq1 = DefinitionsFactory.CreateTech("prereq1", "Prerequisite 1", 50, TechGeneration.Gen0, TechCategory.Military, "Desc");
-            var prereq2 = DefinitionsFactory.CreateTech("prereq2", "Prerequisite 2", 50, TechGeneration.Gen0, TechCategory.Science, "Desc");
-            var tech = DefinitionsFactory.CreateTech("tech_advanced", "Advanced Tech", 100, TechGeneration.Gen1, TechCategory.Military, "Desc")
+            var prereq1 = DefinitionsFactory.CreateTech("prereq1", "Prerequisite 1", 50, TechGeneration.Gen0, TechCategory.Mecha, "Desc");
+            var prereq2 = DefinitionsFactory.CreateTech("prereq2", "Prerequisite 2", 50, TechGeneration.Gen0, TechCategory.Power, "Desc");
+            var tech = DefinitionsFactory.CreateTech("tech_advanced", "Advanced Tech", 100, TechGeneration.Gen1, TechCategory.Mecha, "Desc")
                 .WithPrerequisites(prereq1, prereq2);
 
             techManager.allTechs.Add(prereq1);
@@ -230,7 +230,7 @@ namespace Robotech.TBS.Tests.EditMode.Systems
         public void IsTechAvailable_WithAlreadyResearched_ReturnsFalse()
         {
             // Arrange
-            var tech = DefinitionsFactory.CreateTech("tech_basic", "Basic Tech", 50, TechGeneration.Gen0, TechCategory.Military, "Desc");
+            var tech = DefinitionsFactory.CreateTech("tech_basic", "Basic Tech", 50, TechGeneration.Gen0, TechCategory.Mecha, "Desc");
             techManager.allTechs.Add(tech);
             techManager.researchedTechs.Add(tech);
 
@@ -281,7 +281,7 @@ namespace Robotech.TBS.Tests.EditMode.Systems
         public void CompleteCurrentTech_WithoutEraTransitionFlag_DoesNotAdvanceGeneration()
         {
             // Arrange
-            var tech = DefinitionsFactory.CreateTech("tech_normal", "Normal Tech", 100, TechGeneration.Gen0, TechCategory.Military, "Desc", allowsEraTransition: false);
+            var tech = DefinitionsFactory.CreateTech("tech_normal", "Normal Tech", 100, TechGeneration.Gen0, TechCategory.Mecha, "Desc", allowsEraTransition: false);
             techManager.currentGeneration = TechGeneration.Gen0;
             techManager.currentResearch = tech;
             techManager.scienceProgress = tech.costScience;
@@ -317,10 +317,10 @@ namespace Robotech.TBS.Tests.EditMode.Systems
         public void GetTechsByGeneration_ReturnsOnlyMatchingGeneration()
         {
             // Arrange
-            var gen0Tech1 = DefinitionsFactory.CreateTech("tech_gen0_1", "Gen0 Tech 1", 50, TechGeneration.Gen0, TechCategory.Military, "Desc");
-            var gen0Tech2 = DefinitionsFactory.CreateTech("tech_gen0_2", "Gen0 Tech 2", 50, TechGeneration.Gen0, TechCategory.Science, "Desc");
-            var gen1Tech = DefinitionsFactory.CreateTech("tech_gen1", "Gen1 Tech", 100, TechGeneration.Gen1, TechCategory.Military, "Desc");
-            var gen2Tech = DefinitionsFactory.CreateTech("tech_gen2", "Gen2 Tech", 150, TechGeneration.Gen2, TechCategory.Infrastructure, "Desc");
+            var gen0Tech1 = DefinitionsFactory.CreateTech("tech_gen0_1", "Gen0 Tech 1", 50, TechGeneration.Gen0, TechCategory.Mecha, "Desc");
+            var gen0Tech2 = DefinitionsFactory.CreateTech("tech_gen0_2", "Gen0 Tech 2", 50, TechGeneration.Gen0, TechCategory.Power, "Desc");
+            var gen1Tech = DefinitionsFactory.CreateTech("tech_gen1", "Gen1 Tech", 100, TechGeneration.Gen1, TechCategory.Mecha, "Desc");
+            var gen2Tech = DefinitionsFactory.CreateTech("tech_gen2", "Gen2 Tech", 150, TechGeneration.Gen2, TechCategory.Power, "Desc");
 
             techManager.allTechs.Add(gen0Tech1);
             techManager.allTechs.Add(gen0Tech2);
@@ -343,7 +343,7 @@ namespace Robotech.TBS.Tests.EditMode.Systems
         public void GetTechsByGeneration_WithNoMatchingTechs_ReturnsEmptyList()
         {
             // Arrange
-            var tech = DefinitionsFactory.CreateTech("tech_gen0", "Gen0 Tech", 50, TechGeneration.Gen0, TechCategory.Military, "Desc");
+            var tech = DefinitionsFactory.CreateTech("tech_gen0", "Gen0 Tech", 50, TechGeneration.Gen0, TechCategory.Mecha, "Desc");
             techManager.allTechs.Add(tech);
 
             // Act
@@ -362,10 +362,10 @@ namespace Robotech.TBS.Tests.EditMode.Systems
         public void GetTechsByCategory_ReturnsOnlyMatchingCategory()
         {
             // Arrange
-            var militaryTech1 = DefinitionsFactory.CreateTech("tech_mil1", "Military Tech 1", 50, TechGeneration.Gen0, TechCategory.Military, "Desc");
-            var militaryTech2 = DefinitionsFactory.CreateTech("tech_mil2", "Military Tech 2", 100, TechGeneration.Gen1, TechCategory.Military, "Desc");
-            var scienceTech = DefinitionsFactory.CreateTech("tech_sci", "Science Tech", 50, TechGeneration.Gen0, TechCategory.Science, "Desc");
-            var infraTech = DefinitionsFactory.CreateTech("tech_infra", "Infrastructure Tech", 75, TechGeneration.Gen0, TechCategory.Infrastructure, "Desc");
+            var militaryTech1 = DefinitionsFactory.CreateTech("tech_mil1", "Military Tech 1", 50, TechGeneration.Gen0, TechCategory.Mecha, "Desc");
+            var militaryTech2 = DefinitionsFactory.CreateTech("tech_mil2", "Military Tech 2", 100, TechGeneration.Gen1, TechCategory.Mecha, "Desc");
+            var scienceTech = DefinitionsFactory.CreateTech("tech_sci", "Science Tech", 50, TechGeneration.Gen0, TechCategory.Power, "Desc");
+            var infraTech = DefinitionsFactory.CreateTech("tech_infra", "Infrastructure Tech", 75, TechGeneration.Gen0, TechCategory.Power, "Desc");
 
             techManager.allTechs.Add(militaryTech1);
             techManager.allTechs.Add(militaryTech2);
@@ -373,8 +373,8 @@ namespace Robotech.TBS.Tests.EditMode.Systems
             techManager.allTechs.Add(infraTech);
 
             // Act
-            var militaryTechs = techManager.GetTechsByCategory(TechCategory.Military);
-            var scienceTechs = techManager.GetTechsByCategory(TechCategory.Science);
+            var militaryTechs = techManager.GetTechsByCategory(TechCategory.Mecha);
+            var scienceTechs = techManager.GetTechsByCategory(TechCategory.Power);
 
             // Assert
             Assert.AreEqual(2, militaryTechs.Count);
@@ -388,7 +388,7 @@ namespace Robotech.TBS.Tests.EditMode.Systems
         public void GetTechsByCategory_WithNoMatchingTechs_ReturnsEmptyList()
         {
             // Arrange
-            var tech = DefinitionsFactory.CreateTech("tech_mil", "Military Tech", 50, TechGeneration.Gen0, TechCategory.Military, "Desc");
+            var tech = DefinitionsFactory.CreateTech("tech_mil", "Military Tech", 50, TechGeneration.Gen0, TechCategory.Mecha, "Desc");
             techManager.allTechs.Add(tech);
 
             // Act
@@ -407,9 +407,9 @@ namespace Robotech.TBS.Tests.EditMode.Systems
         public void UpdateAvailableTechs_AddsOnlyAvailableTechs()
         {
             // Arrange
-            var tech1 = DefinitionsFactory.CreateTech("tech1", "Tech 1", 50, TechGeneration.Gen0, TechCategory.Military, "Desc");
-            var prereq = DefinitionsFactory.CreateTech("prereq", "Prerequisite", 50, TechGeneration.Gen0, TechCategory.Military, "Desc");
-            var tech2 = DefinitionsFactory.CreateTech("tech2", "Tech 2", 100, TechGeneration.Gen1, TechCategory.Military, "Desc")
+            var tech1 = DefinitionsFactory.CreateTech("tech1", "Tech 1", 50, TechGeneration.Gen0, TechCategory.Mecha, "Desc");
+            var prereq = DefinitionsFactory.CreateTech("prereq", "Prerequisite", 50, TechGeneration.Gen0, TechCategory.Mecha, "Desc");
+            var tech2 = DefinitionsFactory.CreateTech("tech2", "Tech 2", 100, TechGeneration.Gen1, TechCategory.Mecha, "Desc")
                 .WithPrerequisites(prereq);
 
             techManager.allTechs.Add(tech1);
@@ -430,8 +430,8 @@ namespace Robotech.TBS.Tests.EditMode.Systems
         public void UpdateAvailableTechs_AfterResearch_UpdatesAvailability()
         {
             // Arrange
-            var prereq = DefinitionsFactory.CreateTech("prereq", "Prerequisite", 50, TechGeneration.Gen0, TechCategory.Military, "Desc");
-            var tech = DefinitionsFactory.CreateTech("tech", "Tech", 100, TechGeneration.Gen1, TechCategory.Military, "Desc")
+            var prereq = DefinitionsFactory.CreateTech("prereq", "Prerequisite", 50, TechGeneration.Gen0, TechCategory.Mecha, "Desc");
+            var tech = DefinitionsFactory.CreateTech("tech", "Tech", 100, TechGeneration.Gen1, TechCategory.Mecha, "Desc")
                 .WithPrerequisites(prereq);
 
             techManager.allTechs.Add(prereq);
@@ -453,7 +453,7 @@ namespace Robotech.TBS.Tests.EditMode.Systems
         public void UpdateAvailableTechs_ExcludesAlreadyResearched()
         {
             // Arrange
-            var tech = DefinitionsFactory.CreateTech("tech", "Tech", 50, TechGeneration.Gen0, TechCategory.Military, "Desc");
+            var tech = DefinitionsFactory.CreateTech("tech", "Tech", 50, TechGeneration.Gen0, TechCategory.Mecha, "Desc");
             techManager.allTechs.Add(tech);
             techManager.researchedTechs.Add(tech);
 
@@ -472,7 +472,7 @@ namespace Robotech.TBS.Tests.EditMode.Systems
         public void CompleteCurrentTech_AddsToResearchedTechs()
         {
             // Arrange
-            var tech = DefinitionsFactory.CreateTech("tech", "Tech", 100, TechGeneration.Gen0, TechCategory.Military, "Desc");
+            var tech = DefinitionsFactory.CreateTech("tech", "Tech", 100, TechGeneration.Gen0, TechCategory.Mecha, "Desc");
             techManager.currentResearch = tech;
             techManager.scienceProgress = tech.costScience;
 
@@ -487,8 +487,8 @@ namespace Robotech.TBS.Tests.EditMode.Systems
         public void CompleteCurrentTech_CallsUpdateAvailableTechs()
         {
             // Arrange
-            var prereq = DefinitionsFactory.CreateTech("prereq", "Prerequisite", 50, TechGeneration.Gen0, TechCategory.Military, "Desc");
-            var tech = DefinitionsFactory.CreateTech("tech", "Tech", 100, TechGeneration.Gen1, TechCategory.Military, "Desc")
+            var prereq = DefinitionsFactory.CreateTech("prereq", "Prerequisite", 50, TechGeneration.Gen0, TechCategory.Mecha, "Desc");
+            var tech = DefinitionsFactory.CreateTech("tech", "Tech", 100, TechGeneration.Gen1, TechCategory.Mecha, "Desc")
                 .WithPrerequisites(prereq);
 
             techManager.allTechs.Add(prereq);
@@ -511,7 +511,7 @@ namespace Robotech.TBS.Tests.EditMode.Systems
         public void CompleteCurrentTech_RemovesFromAvailableTechs()
         {
             // Arrange
-            var tech = DefinitionsFactory.CreateTech("tech", "Tech", 100, TechGeneration.Gen0, TechCategory.Military, "Desc");
+            var tech = DefinitionsFactory.CreateTech("tech", "Tech", 100, TechGeneration.Gen0, TechCategory.Mecha, "Desc");
             techManager.allTechs.Add(tech);
             techManager.availableTechs.Add(tech);
             techManager.currentResearch = tech;

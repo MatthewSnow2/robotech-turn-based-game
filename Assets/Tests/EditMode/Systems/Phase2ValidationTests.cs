@@ -32,11 +32,11 @@ namespace Robotech.TBS.Tests.EditMode.Systems
         {
             // Gen 0 Techs (8 total)
             var jetPropulsion = DefinitionsFactory.CreateTech(
-                "jet_propulsion", "Jet Propulsion", 10, TechGeneration.Gen0, TechCategory.Military,
+                "jet_propulsion", "Jet Propulsion", 10, TechGeneration.Gen0, TechCategory.Mecha,
                 "Advanced jet engine technology.", isCriticalPath: true);
 
             var conventionalBallistics = DefinitionsFactory.CreateTech(
-                "conventional_ballistics", "Conventional Ballistics", 15, TechGeneration.Gen0, TechCategory.Military,
+                "conventional_ballistics", "Conventional Ballistics", 15, TechGeneration.Gen0, TechCategory.Mecha,
                 "Standard projectile weapons.");
 
             var protocultureDiscovery = DefinitionsFactory.CreateTech(
@@ -44,68 +44,68 @@ namespace Robotech.TBS.Tests.EditMode.Systems
                 "Unlocks protoculture secrets.", isCriticalPath: true, allowsEraTransition: true);
 
             var reactorMk1 = DefinitionsFactory.CreateTech(
-                "reactor_mk1", "Energy Reactors Mk I", 15, TechGeneration.Gen0, TechCategory.Infrastructure,
+                "reactor_mk1", "Energy Reactors Mk I", 15, TechGeneration.Gen0, TechCategory.Power,
                 "Basic protoculture reactors.")
                 .WithYieldBonus(protoculture: 10);
 
             var chassisI = DefinitionsFactory.CreateTech(
-                "chassis_i", "Mecha Chassis I", 15, TechGeneration.Gen0, TechCategory.Military,
+                "chassis_i", "Mecha Chassis I", 15, TechGeneration.Gen0, TechCategory.Mecha,
                 "Foundational mecha framework.");
 
             var metallurgyI = DefinitionsFactory.CreateTech(
-                "metallurgy_i", "Metallurgy I", 12, TechGeneration.Gen0, TechCategory.Military,
+                "metallurgy_i", "Metallurgy I", 12, TechGeneration.Gen0, TechCategory.Mecha,
                 "Advanced alloys and armor plating.")
                 .WithUnitBonuses(armor: 5);
 
             var missileGuidanceI = DefinitionsFactory.CreateTech(
-                "missile_guidance_i", "Missile Guidance I", 13, TechGeneration.Gen0, TechCategory.Military,
+                "missile_guidance_i", "Missile Guidance I", 13, TechGeneration.Gen0, TechCategory.Mecha,
                 "Basic missile targeting systems.");
 
             var globalComms = DefinitionsFactory.CreateTech(
-                "global_comms", "Global Communications Network", 18, TechGeneration.Gen0, TechCategory.Science,
+                "global_comms", "Global Communications Network", 18, TechGeneration.Gen0, TechCategory.Power,
                 "Worldwide communication infrastructure.")
                 .WithYieldBonus(science: 5);
 
             // Gen 1 Techs (8 total)
             var transformationI = DefinitionsFactory.CreateTech(
-                "transformation_i", "Transformation Engineering I", 30, TechGeneration.Gen1, TechCategory.Military,
+                "transformation_i", "Transformation Engineering I", 30, TechGeneration.Gen1, TechCategory.Mecha,
                 "Enables VF-0 production.", isCriticalPath: true)
                 .WithPrerequisites(chassisI);
 
             var sensorsI = DefinitionsFactory.CreateTech(
-                "sensors_i", "Sensor Suite Integration I", 25, TechGeneration.Gen1, TechCategory.Military,
+                "sensors_i", "Sensor Suite Integration I", 25, TechGeneration.Gen1, TechCategory.Mecha,
                 "Integrated sensor systems.")
                 .WithPrerequisites(jetPropulsion);
 
             var reactorMk2 = DefinitionsFactory.CreateTech(
-                "reactor_mk2", "Reactor Mk II", 35, TechGeneration.Gen1, TechCategory.Infrastructure,
+                "reactor_mk2", "Reactor Mk II", 35, TechGeneration.Gen1, TechCategory.Power,
                 "Enhanced protoculture reactor efficiency.")
                 .WithPrerequisites(reactorMk1)
                 .WithYieldBonus(protoculture: 15);
 
             var chassisII = DefinitionsFactory.CreateTech(
-                "chassis_ii", "Mecha Chassis II", 32, TechGeneration.Gen1, TechCategory.Military,
+                "chassis_ii", "Mecha Chassis II", 32, TechGeneration.Gen1, TechCategory.Mecha,
                 "Refined mecha designs.")
                 .WithPrerequisites(chassisI);
 
             var missileControlII = DefinitionsFactory.CreateTech(
-                "missile_control_ii", "Missile Control II", 28, TechGeneration.Gen1, TechCategory.Military,
+                "missile_control_ii", "Missile Control II", 28, TechGeneration.Gen1, TechCategory.Mecha,
                 "Advanced missile guidance.")
                 .WithPrerequisites(missileGuidanceI);
 
             var advancedMaterials = DefinitionsFactory.CreateTech(
-                "advanced_materials", "Advanced Materials", 30, TechGeneration.Gen1, TechCategory.Military,
+                "advanced_materials", "Advanced Materials", 30, TechGeneration.Gen1, TechCategory.Mecha,
                 "Next-gen composite materials.")
                 .WithPrerequisites(metallurgyI)
                 .WithUnitBonuses(armor: 8);
 
             var radarNetwork = DefinitionsFactory.CreateTech(
-                "radar_network", "Radar Network", 25, TechGeneration.Gen1, TechCategory.Science,
+                "radar_network", "Radar Network", 25, TechGeneration.Gen1, TechCategory.Power,
                 "Integrated radar systems.")
                 .WithPrerequisites(globalComms);
 
             var scoutArmor = DefinitionsFactory.CreateTech(
-                "scout_armor", "Scout Armor Program", 22, TechGeneration.Gen1, TechCategory.Military,
+                "scout_armor", "Scout Armor Program", 22, TechGeneration.Gen1, TechCategory.Mecha,
                 "Lightweight armor for reconnaissance.")
                 .WithPrerequisites(chassisI)
                 .WithUnitBonuses(armor: 3);

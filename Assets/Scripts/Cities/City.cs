@@ -4,6 +4,7 @@ using Robotech.TBS.Data;
 using Robotech.TBS.Hex;
 using Robotech.TBS.Map;
 using Robotech.TBS.Units;
+using Robotech.TBS.Systems;
 
 namespace Robotech.TBS.Cities
 {
@@ -101,9 +102,10 @@ namespace Robotech.TBS.Cities
 
         bool IsTileFree(HexCoord c)
         {
-            foreach (var u in FindObjectsOfType<Unit>())
+            // Use UnitRegistry for O(1) lookup
+            if (UnitRegistry.Instance != null)
             {
-                if (u.coord.q == c.q && u.coord.r == c.r) return false;
+                return !UnitRegistry.Instance.IsOccupied(c);
             }
             return true;
         }

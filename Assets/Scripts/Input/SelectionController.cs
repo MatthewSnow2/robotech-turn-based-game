@@ -19,8 +19,14 @@ namespace Robotech.TBS.Inputs
         public Unit SelectedUnit { get; private set; }
         public HexCoord HoverHex { get; private set; }
         public HashSet<HexCoord> ReachableHexes { get; private set; } = new();
+        public Dictionary<HexCoord, int> ReachableHexCosts { get; private set; } = new();
         public HashSet<HexCoord> AttackableHexes { get; private set; } = new();
         public bool AttackMode { get; private set; } = false;
+
+        /// <summary>
+        /// The currently calculated path to the hover hex (for preview visualization).
+        /// </summary>
+        public List<HexCoord> CurrentPath { get; private set; } = new();
 
         public static event Action<Unit> OnUnitSelected;
         public static event Action OnSelectionCleared;
@@ -61,7 +67,31 @@ namespace Robotech.TBS.Inputs
             if (ground.Raycast(ray, out enter))
             {
                 var hit = ray.origin + ray.direction * enter;
-                HoverHex = HexMath.AxialFromWorld(hit, grid.hexSize);
+                var newHover = HexMath.AxialFromWorld(hit, grid.hexSize);
+
+                // Update path preview when hover hex changes
+                if (newHover.q != HoverHex.q || newHover.r != HoverHex.r)
+                {
+                    HoverHex = newHover;
+                    UpdatePathPreview();
+                }
+            }
+        }
+
+        void UpdatePathPreview()
+        {
+            CurrentPath.Clear();
+
+            if (SelectedUnit == null || AttackMode) return;
+            if (!ReachableHexes.Contains(HoverHex)) return;
+
+            // Calculate path to hover hex for visualization
+            var pathResult = Pathfinder.FindPathWithBudget(
+                SelectedUnit.coord, HoverHex, SelectedUnit.movesLeft, grid, mapGen, SelectedUnit.definition);
+
+            if (pathResult.Success)
+            {
+                CurrentPath = pathResult.Path;
             }
         }
 
@@ -97,11 +127,15 @@ namespace Robotech.TBS.Inputs
                 }
                 else
                 {
-                    // Move if reachable and passable
-                    if (ReachableHexes.Contains(HoverHex) && IsPassable(SelectedUnit.definition, HoverHex))
+                    // Move if reachable using pathfinding
+                    if (ReachableHexes.Contains(HoverHex))
                     {
-                        SelectedUnit.MoveTo(HoverHex, grid.hexSize);
-                        RecomputeRanges();
+                        // Use pathfinding for multi-hex movement
+                        var pathResult = SelectedUnit.MoveToTarget(HoverHex, grid.hexSize, grid, mapGen);
+                        if (pathResult.Success)
+                        {
+                            RecomputeRanges();
+                        }
                     }
                 }
             }
@@ -133,24 +167,29 @@ namespace Robotech.TBS.Inputs
         public void RecomputeRanges()
         {
             ReachableHexes.Clear();
+            ReachableHexCosts.Clear();
             AttackableHexes.Clear();
+            CurrentPath.Clear();
             if (SelectedUnit == null) return;
 
-            // Simple 1-step movement for now
-            foreach (var n in grid.Neighbors(SelectedUnit.coord))
+            // Use pathfinding to compute all reachable hexes with terrain costs
+            ReachableHexCosts = SelectedUnit.GetReachableHexes(grid, mapGen);
+            foreach (var kvp in ReachableHexCosts)
             {
-                if (IsPassable(SelectedUnit.definition, n))
-                    ReachableHexes.Add(n);
+                ReachableHexes.Add(kvp.Key);
             }
-            // Simple attack: adjacent enemies only for now
-            var all = FindObjectsOfType<Unit>();
-            foreach (var other in all)
+
+            // Attack range based on weapon ranges - use UnitRegistry and CombatResolver
+            if (UnitRegistry.Instance != null)
             {
-                if (other == SelectedUnit) continue;
-                if (other.definition.faction == SelectedUnit.definition.faction) continue;
-                if (SelectedUnit.coord.Distance(other.coord) == 1)
+                var enemies = UnitRegistry.Instance.GetEnemyUnits(SelectedUnit.definition.faction);
+                foreach (var enemy in enemies)
                 {
-                    AttackableHexes.Add(other.coord);
+                    // Use CombatResolver.CanAttack for proper range validation
+                    if (CombatResolver.CanAttack(SelectedUnit, enemy))
+                    {
+                        AttackableHexes.Add(enemy.coord);
+                    }
                 }
             }
         }
@@ -162,10 +201,10 @@ namespace Robotech.TBS.Inputs
 
         private Unit FindUnitAt(HexCoord c)
         {
-            foreach (var u in FindObjectsOfType<Unit>())
+            // Use UnitRegistry for O(1) lookup
+            if (UnitRegistry.Instance != null)
             {
-                if (u.coord.q == c.q && u.coord.r == c.r)
-                    return u;
+                return UnitRegistry.Instance.GetUnitAt(c);
             }
             return null;
         }

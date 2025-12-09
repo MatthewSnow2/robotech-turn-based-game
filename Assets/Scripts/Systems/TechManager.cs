@@ -62,21 +62,23 @@ namespace Robotech.TBS.Systems
             if (currentResearch.hpBonus > 0 || currentResearch.armorBonus > 0 ||
                 currentResearch.movementBonus > 0 || currentResearch.attackBonus > 0)
             {
-                // Find all active units in scene and upgrade them
-                var allUnits = FindObjectsOfType<Units.Unit>();
-                int upgradeCount = 0;
-                foreach (var unit in allUnits)
+                // Use UnitRegistry for efficient unit lookup
+                if (UnitRegistry.Instance != null)
                 {
-                    if (!unit.HasTechUpgrade(currentResearch))
+                    int upgradeCount = 0;
+                    foreach (var unit in UnitRegistry.Instance.GetAllUnits())
                     {
-                        unit.ApplyTechUpgrade(currentResearch);
-                        upgradeCount++;
+                        if (!unit.HasTechUpgrade(currentResearch))
+                        {
+                            unit.ApplyTechUpgrade(currentResearch);
+                            upgradeCount++;
+                        }
                     }
-                }
 
-                if (upgradeCount > 0)
-                {
-                    Debug.Log($"All {upgradeCount} units upgraded by {currentResearch.displayName}");
+                    if (upgradeCount > 0)
+                    {
+                        Debug.Log($"All {upgradeCount} units upgraded by {currentResearch.displayName}");
+                    }
                 }
             }
 

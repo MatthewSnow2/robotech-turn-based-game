@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using Robotech.TBS.Hex;
 using Robotech.TBS.Data;
+using Robotech.TBS.Systems;
+using Robotech.TBS.Map;
 
 namespace Robotech.TBS.Units
 {
@@ -28,6 +30,21 @@ namespace Robotech.TBS.Units
             movesLeft = definition.movement;
             transform.position = coord.ToWorld(hexSize) + Vector3.up * 0.5f;
             name = $"Unit_{definition.displayName}_{coord.q}_{coord.r}";
+
+            // Register with UnitRegistry
+            if (UnitRegistry.Instance != null)
+            {
+                UnitRegistry.Instance.Register(this);
+            }
+        }
+
+        void OnDestroy()
+        {
+            // Unregister from UnitRegistry
+            if (UnitRegistry.Instance != null)
+            {
+                UnitRegistry.Instance.Unregister(this);
+            }
         }
 
         public void NewTurn()
@@ -35,6 +52,9 @@ namespace Robotech.TBS.Units
             movesLeft = definition.movement + movementBonus;
         }
 
+        /// <summary>
+        /// Check if the unit can move to an adjacent hex (legacy single-step movement).
+        /// </summary>
         public bool CanMoveTo(HexCoord target, System.Func<HexCoord, bool> passable)
         {
             if (coord.Distance(target) != 1) return false; // simple adjacent step
@@ -42,11 +62,140 @@ namespace Robotech.TBS.Units
             return movesLeft > 0;
         }
 
+        /// <summary>
+        /// Check if the unit can reach a target hex using pathfinding.
+        /// </summary>
+        /// <param name="target">Target hex coordinate</param>
+        /// <param name="grid">The hex grid for bounds checking</param>
+        /// <param name="mapGen">Map generator for terrain data</param>
+        /// <returns>True if a valid path exists within remaining movement points</returns>
+        public bool CanReach(HexCoord target, HexGrid grid, MapGenerator mapGen)
+        {
+            if (movesLeft <= 0) return false;
+            var result = Pathfinder.FindPath(coord, target, grid, mapGen, definition, movesLeft);
+            return result.Success;
+        }
+
+        /// <summary>
+        /// Move to an adjacent hex (legacy single-step movement).
+        /// </summary>
         public void MoveTo(HexCoord target, float hexSize)
         {
+            var oldCoord = coord;
             coord = target;
             movesLeft = Mathf.Max(0, movesLeft - 1);
             transform.position = coord.ToWorld(hexSize) + Vector3.up * 0.5f;
+
+            // Update UnitRegistry with new position
+            if (UnitRegistry.Instance != null)
+            {
+                UnitRegistry.Instance.UpdatePosition(this, oldCoord, coord);
+            }
+        }
+
+        /// <summary>
+        /// Move the unit along a path, deducting movement costs based on terrain.
+        /// </summary>
+        /// <param name="path">List of hex coordinates to traverse (including start position)</param>
+        /// <param name="hexSize">Size of hexes for world position calculation</param>
+        /// <param name="mapGen">Map generator for terrain cost lookup</param>
+        /// <returns>True if movement was successful, false if path was invalid</returns>
+        public bool MoveAlongPath(List<HexCoord> path, float hexSize, MapGenerator mapGen)
+        {
+            if (path == null || path.Count < 2) return false;
+            if (movesLeft <= 0) return false;
+
+            // Verify path starts at current position
+            if (path[0].q != coord.q || path[0].r != coord.r) return false;
+
+            var oldCoord = coord;
+            int totalCost = 0;
+
+            // Calculate and deduct movement cost for each step
+            for (int i = 1; i < path.Count; i++)
+            {
+                var terrain = mapGen.GetTerrain(path[i]);
+                int stepCost = Pathfinder.GetMovementCost(terrain);
+
+                if (totalCost + stepCost > movesLeft)
+                {
+                    // Can't afford this step, stop at previous position
+                    if (i > 1)
+                    {
+                        coord = path[i - 1];
+                        movesLeft -= totalCost;
+                        transform.position = coord.ToWorld(hexSize) + Vector3.up * 0.5f;
+
+                        if (UnitRegistry.Instance != null)
+                        {
+                            UnitRegistry.Instance.UpdatePosition(this, oldCoord, coord);
+                        }
+                        return true;
+                    }
+                    return false;
+                }
+
+                totalCost += stepCost;
+            }
+
+            // Successfully traversed entire path
+            coord = path[path.Count - 1];
+            movesLeft -= totalCost;
+            transform.position = coord.ToWorld(hexSize) + Vector3.up * 0.5f;
+
+            if (UnitRegistry.Instance != null)
+            {
+                UnitRegistry.Instance.UpdatePosition(this, oldCoord, coord);
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Move the unit to a target hex using pathfinding.
+        /// </summary>
+        /// <param name="target">Target hex coordinate</param>
+        /// <param name="hexSize">Size of hexes for world position calculation</param>
+        /// <param name="grid">The hex grid for bounds checking</param>
+        /// <param name="mapGen">Map generator for terrain data</param>
+        /// <returns>PathResult with success status and path taken</returns>
+        public PathResult MoveToTarget(HexCoord target, float hexSize, HexGrid grid, MapGenerator mapGen)
+        {
+            if (movesLeft <= 0)
+            {
+                return PathResult.Failed();
+            }
+
+            // Find path within movement budget
+            var result = Pathfinder.FindPathWithBudget(coord, target, movesLeft, grid, mapGen, definition);
+
+            if (!result.Success || result.Path.Count < 2)
+            {
+                return PathResult.Failed();
+            }
+
+            // Execute the movement
+            if (MoveAlongPath(result.Path, hexSize, mapGen))
+            {
+                return result;
+            }
+
+            return PathResult.Failed();
+        }
+
+        /// <summary>
+        /// Get all hexes this unit can reach with current movement points.
+        /// </summary>
+        /// <param name="grid">The hex grid for bounds checking</param>
+        /// <param name="mapGen">Map generator for terrain data</param>
+        /// <returns>Dictionary of reachable hexes with their movement costs</returns>
+        public Dictionary<HexCoord, int> GetReachableHexes(HexGrid grid, MapGenerator mapGen)
+        {
+            if (movesLeft <= 0)
+            {
+                return new Dictionary<HexCoord, int>();
+            }
+
+            return Pathfinder.GetReachableHexes(coord, movesLeft, grid, mapGen, definition);
         }
 
         public void TakeDamage(int amount)

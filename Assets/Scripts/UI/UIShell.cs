@@ -1,44 +1,3 @@
-            // Build Zent Tactical Pod
-            var zpGO = new GameObject("BuildZentPod");
-            zpGO.transform.SetParent(buildPanel.transform, false);
-            buildZentPodBtn = zpGO.AddComponent<Button>();
-            var zpImg = zpGO.AddComponent<Image>();
-            zpImg.color = new Color(0.55f,0.25f,0.25f,0.9f);
-            var zpRT = zpGO.GetComponent<RectTransform>();
-            zpRT.anchorMin = new Vector2(0.52f,0);
-            zpRT.anchorMax = new Vector2(0.76f,1);
-            zpRT.offsetMin = Vector2.zero; zpRT.offsetMax = Vector2.zero;
-            var zpLblGO = new GameObject("Text");
-            zpLblGO.transform.SetParent(zpGO.transform, false);
-            var zpLbl = zpLblGO.AddComponent<Text>();
-            zpLbl.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
-            zpLbl.alignment = TextAnchor.MiddleCenter;
-            zpLbl.color = Color.white;
-            zpLbl.text = "Build Pod";
-            var zpLblRT = zpLblGO.GetComponent<RectTransform>();
-            zpLblRT.anchorMin = new Vector2(0,0); zpLblRT.anchorMax = new Vector2(1,1);
-            zpLblRT.offsetMin = Vector2.zero; zpLblRT.offsetMax = Vector2.zero;
-
-            // Build Zent Officer Pod
-            var zoGO = new GameObject("BuildZentOfficer");
-            zoGO.transform.SetParent(buildPanel.transform, false);
-            buildZentOfficerBtn = zoGO.AddComponent<Button>();
-            var zoImg = zoGO.AddComponent<Image>();
-            zoImg.color = new Color(0.6f,0.2f,0.2f,0.9f);
-            var zoRT = zoGO.GetComponent<RectTransform>();
-            zoRT.anchorMin = new Vector2(0.78f,0);
-            zoRT.anchorMax = new Vector2(1f,1);
-            zoRT.offsetMin = Vector2.zero; zoRT.offsetMax = Vector2.zero;
-            var zoLblGO = new GameObject("Text");
-            zoLblGO.transform.SetParent(zoGO.transform, false);
-            var zoLbl = zoLblGO.AddComponent<Text>();
-            zoLbl.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
-            zoLbl.alignment = TextAnchor.MiddleCenter;
-            zoLbl.color = Color.white;
-            zoLbl.text = "Build Officer";
-            var zoLblRT = zoLblGO.GetComponent<RectTransform>();
-            zoLblRT.anchorMin = new Vector2(0,0); zoLblRT.anchorMax = new Vector2(1,1);
-            zoLblRT.offsetMin = Vector2.zero; zoLblRT.offsetMax = Vector2.zero;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -510,13 +469,6 @@ namespace Robotech.TBS.UI
             if (cityManager == null) return null;
             foreach (var c in cityManager.Cities)
                 if (c != null && c.faction == f) return c;
-            return null;
-        }
-
-            foreach (var n in grid.Neighbors(center))
-            {
-                if (IsPassable(def, n) && IsTileFree(n)) return n;
-            }
             return null;
         }
 

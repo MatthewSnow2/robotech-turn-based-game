@@ -38,7 +38,7 @@ namespace Robotech.TBS.Tests.EditMode.Systems
         {
             // Arrange
             var reactorMk1 = DefinitionsFactory.CreateTech(
-                "reactor_mk1", "Reactor Mk I", 15, TechGeneration.Gen0, TechCategory.Infrastructure, "Desc")
+                "reactor_mk1", "Reactor Mk I", 15, TechGeneration.Gen0, TechCategory.Power, "Desc")
                 .WithYieldBonus(protoculture: 10);
 
             techManager.allTechs.Add(reactorMk1);
@@ -68,11 +68,11 @@ namespace Robotech.TBS.Tests.EditMode.Systems
         {
             // Arrange
             var reactorMk1 = DefinitionsFactory.CreateTech(
-                "reactor_mk1", "Reactor Mk I", 15, TechGeneration.Gen0, TechCategory.Infrastructure, "Desc")
+                "reactor_mk1", "Reactor Mk I", 15, TechGeneration.Gen0, TechCategory.Power, "Desc")
                 .WithYieldBonus(protoculture: 10);
 
             var reactorMk2 = DefinitionsFactory.CreateTech(
-                "reactor_mk2", "Reactor Mk II", 35, TechGeneration.Gen1, TechCategory.Infrastructure, "Desc")
+                "reactor_mk2", "Reactor Mk II", 35, TechGeneration.Gen1, TechCategory.Power, "Desc")
                 .WithPrerequisites(reactorMk1)
                 .WithYieldBonus(protoculture: 15);
 
@@ -108,7 +108,7 @@ namespace Robotech.TBS.Tests.EditMode.Systems
         {
             // Arrange
             var globalComms = DefinitionsFactory.CreateTech(
-                "global_comms", "Global Communications", 18, TechGeneration.Gen0, TechCategory.Science, "Desc")
+                "global_comms", "Global Communications", 18, TechGeneration.Gen0, TechCategory.Power, "Desc")
                 .WithYieldBonus(science: 5);
 
             techManager.allTechs.Add(globalComms);
@@ -134,7 +134,7 @@ namespace Robotech.TBS.Tests.EditMode.Systems
         {
             // Arrange
             var productionTech = DefinitionsFactory.CreateTech(
-                "prod_tech", "Production Tech", 20, TechGeneration.Gen0, TechCategory.Infrastructure, "Desc")
+                "prod_tech", "Production Tech", 20, TechGeneration.Gen0, TechCategory.Power, "Desc")
                 .WithYieldBonus(production: 12);
 
             techManager.allTechs.Add(productionTech);
@@ -159,11 +159,11 @@ namespace Robotech.TBS.Tests.EditMode.Systems
         public void Bonus_CalculationMethod_IncludesAllTechs()
         {
             // Arrange
-            var reactor1 = DefinitionsFactory.CreateTech("r1", "R1", 10, TechGeneration.Gen0, TechCategory.Infrastructure, "D")
+            var reactor1 = DefinitionsFactory.CreateTech("r1", "R1", 10, TechGeneration.Gen0, TechCategory.Power, "D")
                 .WithYieldBonus(protoculture: 10);
-            var reactor2 = DefinitionsFactory.CreateTech("r2", "R2", 20, TechGeneration.Gen0, TechCategory.Infrastructure, "D")
+            var reactor2 = DefinitionsFactory.CreateTech("r2", "R2", 20, TechGeneration.Gen0, TechCategory.Power, "D")
                 .WithYieldBonus(protoculture: 15);
-            var reactor3 = DefinitionsFactory.CreateTech("r3", "R3", 30, TechGeneration.Gen0, TechCategory.Infrastructure, "D")
+            var reactor3 = DefinitionsFactory.CreateTech("r3", "R3", 30, TechGeneration.Gen0, TechCategory.Power, "D")
                 .WithYieldBonus(protoculture: 8);
 
             techManager.allTechs.AddRange(new[] { reactor1, reactor2, reactor3 });
@@ -189,7 +189,7 @@ namespace Robotech.TBS.Tests.EditMode.Systems
         {
             // Arrange
             var transformationI = DefinitionsFactory.CreateTech(
-                "transformation_i", "Transformation Eng I", 30, TechGeneration.Gen1, TechCategory.Military, "Desc");
+                "transformation_i", "Transformation Eng I", 30, TechGeneration.Gen1, TechCategory.Mecha, "Desc");
 
             var vf0 = DefinitionsFactory.CreateUnit(
                 "vf0", "VF-0 Phoenix", Faction.RDF, UnitLayer.Air, 100, 1, 4, 3,
@@ -210,7 +210,7 @@ namespace Robotech.TBS.Tests.EditMode.Systems
         {
             // Arrange
             var transformationI = DefinitionsFactory.CreateTech(
-                "transformation_i", "Transformation Eng I", 30, TechGeneration.Gen1, TechCategory.Military, "Desc");
+                "transformation_i", "Transformation Eng I", 30, TechGeneration.Gen1, TechCategory.Mecha, "Desc");
 
             var vf0 = DefinitionsFactory.CreateUnit(
                 "vf0", "VF-0 Phoenix", Faction.RDF, UnitLayer.Air, 100, 1, 4, 3,
@@ -236,7 +236,7 @@ namespace Robotech.TBS.Tests.EditMode.Systems
         {
             // Arrange
             var metallurgyI = DefinitionsFactory.CreateTech(
-                "metallurgy_i", "Metallurgy I", 12, TechGeneration.Gen0, TechCategory.Military, "Desc")
+                "metallurgy_i", "Metallurgy I", 12, TechGeneration.Gen0, TechCategory.Mecha, "Desc")
                 .WithUnitBonuses(armor: 5);
 
             var unitDef = DefinitionsFactory.CreateUnit(
@@ -259,7 +259,7 @@ namespace Robotech.TBS.Tests.EditMode.Systems
         {
             // Arrange
             var metallurgyI = DefinitionsFactory.CreateTech(
-                "metallurgy_i", "Metallurgy I", 12, TechGeneration.Gen0, TechCategory.Military, "Desc")
+                "metallurgy_i", "Metallurgy I", 12, TechGeneration.Gen0, TechCategory.Mecha, "Desc")
                 .WithUnitBonuses(armor: 5);
 
             var unitDef = DefinitionsFactory.CreateUnit(
@@ -288,11 +288,11 @@ namespace Robotech.TBS.Tests.EditMode.Systems
         {
             // Arrange
             var metallurgyI = DefinitionsFactory.CreateTech(
-                "metallurgy_i", "Metallurgy I", 12, TechGeneration.Gen0, TechCategory.Military, "Desc")
+                "metallurgy_i", "Metallurgy I", 12, TechGeneration.Gen0, TechCategory.Mecha, "Desc")
                 .WithUnitBonuses(armor: 5);
 
             var advancedMaterials = DefinitionsFactory.CreateTech(
-                "advanced_materials", "Advanced Materials", 30, TechGeneration.Gen1, TechCategory.Military, "Desc")
+                "advanced_materials", "Advanced Materials", 30, TechGeneration.Gen1, TechCategory.Mecha, "Desc")
                 .WithPrerequisites(metallurgyI)
                 .WithUnitBonuses(armor: 8);
 
@@ -321,7 +321,7 @@ namespace Robotech.TBS.Tests.EditMode.Systems
         {
             // Arrange
             var metallurgyI = DefinitionsFactory.CreateTech(
-                "metallurgy_i", "Metallurgy I", 12, TechGeneration.Gen0, TechCategory.Military, "Desc")
+                "metallurgy_i", "Metallurgy I", 12, TechGeneration.Gen0, TechCategory.Mecha, "Desc")
                 .WithUnitBonuses(armor: 5);
 
             var unitDef = DefinitionsFactory.CreateUnit(
@@ -350,7 +350,7 @@ namespace Robotech.TBS.Tests.EditMode.Systems
         {
             // Arrange
             var metallurgyI = DefinitionsFactory.CreateTech(
-                "metallurgy_i", "Metallurgy I", 12, TechGeneration.Gen0, TechCategory.Military, "Desc")
+                "metallurgy_i", "Metallurgy I", 12, TechGeneration.Gen0, TechCategory.Mecha, "Desc")
                 .WithUnitBonuses(armor: 5);
 
             var unitDef = DefinitionsFactory.CreateUnit(
@@ -378,7 +378,7 @@ namespace Robotech.TBS.Tests.EditMode.Systems
         {
             // Arrange
             var transformationI = DefinitionsFactory.CreateTech(
-                "transformation_i", "Transformation Eng I", 30, TechGeneration.Gen1, TechCategory.Military, "Desc");
+                "transformation_i", "Transformation Eng I", 30, TechGeneration.Gen1, TechCategory.Mecha, "Desc");
 
             var vf0 = DefinitionsFactory.CreateUnit(
                 "vf0", "VF-0 Phoenix", Faction.RDF, UnitLayer.Air, 100, 1, 4, 3,
@@ -403,15 +403,15 @@ namespace Robotech.TBS.Tests.EditMode.Systems
         public void ComplexScenario_5Techs_Researched()
         {
             // Arrange - Create 5 different techs with various bonuses
-            var tech1 = DefinitionsFactory.CreateTech("t1", "Tech 1", 10, TechGeneration.Gen0, TechCategory.Infrastructure, "D")
+            var tech1 = DefinitionsFactory.CreateTech("t1", "Tech 1", 10, TechGeneration.Gen0, TechCategory.Power, "D")
                 .WithYieldBonus(protoculture: 10);
-            var tech2 = DefinitionsFactory.CreateTech("t2", "Tech 2", 15, TechGeneration.Gen0, TechCategory.Science, "D")
+            var tech2 = DefinitionsFactory.CreateTech("t2", "Tech 2", 15, TechGeneration.Gen0, TechCategory.Power, "D")
                 .WithYieldBonus(science: 5);
-            var tech3 = DefinitionsFactory.CreateTech("t3", "Tech 3", 20, TechGeneration.Gen0, TechCategory.Military, "D")
+            var tech3 = DefinitionsFactory.CreateTech("t3", "Tech 3", 20, TechGeneration.Gen0, TechCategory.Mecha, "D")
                 .WithUnitBonuses(armor: 5);
-            var tech4 = DefinitionsFactory.CreateTech("t4", "Tech 4", 25, TechGeneration.Gen0, TechCategory.Infrastructure, "D")
+            var tech4 = DefinitionsFactory.CreateTech("t4", "Tech 4", 25, TechGeneration.Gen0, TechCategory.Power, "D")
                 .WithYieldBonus(production: 8);
-            var tech5 = DefinitionsFactory.CreateTech("t5", "Tech 5", 30, TechGeneration.Gen0, TechCategory.Military, "D")
+            var tech5 = DefinitionsFactory.CreateTech("t5", "Tech 5", 30, TechGeneration.Gen0, TechCategory.Mecha, "D")
                 .WithUnitBonuses(hp: 20, attack: 3);
 
             techManager.allTechs.AddRange(new[] { tech1, tech2, tech3, tech4, tech5 });

@@ -3,6 +3,7 @@ using UnityEngine;
 using Robotech.TBS.Hex;
 using Robotech.TBS.Map;
 using Robotech.TBS.Systems;
+using Robotech.TBS.Inputs;
 
 namespace Robotech.TBS.Rendering
 {
@@ -13,11 +14,19 @@ namespace Robotech.TBS.Rendering
         public MapGenerator mapGen;
         public CityManager cityManager;
 
+        [Header("Movement Visualization")]
+        public Color reachableColor = new Color(0.2f, 0.8f, 0.2f, 0.4f);
+        public Color pathColor = new Color(1f, 1f, 0f, 0.6f);
+        public Color attackableColor = new Color(0.9f, 0.2f, 0.2f, 0.5f);
+
+        private SelectionController selectionController;
+
         private void OnDrawGizmos()
         {
             if (grid == null || mapGen == null) return;
             if (mapGen.Terrain == null) return;
             if (cityManager == null) cityManager = FindObjectOfType<CityManager>();
+            if (selectionController == null) selectionController = FindObjectOfType<SelectionController>();
 
             foreach (var kv in mapGen.Terrain)
             {
@@ -51,6 +60,67 @@ namespace Robotech.TBS.Rendering
                         }
                     }
                 }
+            }
+
+            // Draw movement visualization overlays
+            DrawMovementVisualization();
+        }
+
+        private void DrawMovementVisualization()
+        {
+            if (selectionController == null) return;
+            if (selectionController.SelectedUnit == null) return;
+
+            // Draw reachable hexes
+            foreach (var hex in selectionController.ReachableHexes)
+            {
+                var center = grid.CoordToWorld(hex);
+                Gizmos.color = reachableColor;
+                DrawFilledHex(center, grid.hexSize * 0.9f);
+            }
+
+            // Draw attackable hexes
+            foreach (var hex in selectionController.AttackableHexes)
+            {
+                var center = grid.CoordToWorld(hex);
+                Gizmos.color = attackableColor;
+                DrawFilledHex(center, grid.hexSize * 0.85f);
+            }
+
+            // Draw path preview
+            if (selectionController.CurrentPath != null && selectionController.CurrentPath.Count > 1)
+            {
+                Gizmos.color = pathColor;
+                for (int i = 0; i < selectionController.CurrentPath.Count - 1; i++)
+                {
+                    var from = grid.CoordToWorld(selectionController.CurrentPath[i]) + Vector3.up * 0.1f;
+                    var to = grid.CoordToWorld(selectionController.CurrentPath[i + 1]) + Vector3.up * 0.1f;
+                    Gizmos.DrawLine(from, to);
+                }
+
+                // Draw filled hex at destination
+                var destCenter = grid.CoordToWorld(selectionController.CurrentPath[selectionController.CurrentPath.Count - 1]);
+                DrawFilledHex(destCenter, grid.hexSize * 0.8f);
+            }
+
+            // Draw hover hex outline
+            if (grid.InBounds(selectionController.HoverHex))
+            {
+                var hoverCenter = grid.CoordToWorld(selectionController.HoverHex);
+                Gizmos.color = new Color(1f, 1f, 1f, 0.8f);
+                DrawHex(hoverCenter, grid.hexSize * 1.02f);
+            }
+        }
+
+        private void DrawFilledHex(Vector3 center, float size)
+        {
+            var verts = GetHexVerts(center, size);
+            // Draw as a wireframe with thicker lines (Gizmos doesn't support filled shapes natively)
+            for (int i = 0; i < 6; i++)
+            {
+                Gizmos.DrawLine(verts[i], verts[(i + 1) % 6]);
+                // Draw inner lines for visual fill effect
+                Gizmos.DrawLine(center, verts[i]);
             }
         }
 

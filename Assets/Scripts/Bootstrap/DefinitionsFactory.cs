@@ -33,6 +33,44 @@ namespace Robotech.TBS.Bootstrap
             return u;
         }
 
+        public static DistrictDefinition CreateDistrict(
+            string id,
+            string name,
+            DistrictType type,
+            int production = 0,
+            int science = 0,
+            int influence = 0,
+            int defense = 0,
+            int vision = 0,
+            int upkeep = 0,
+            string description = "")
+        {
+            var d = ScriptableObject.CreateInstance<DistrictDefinition>();
+            d.districtId = id;
+            d.displayName = name;
+            d.type = type;
+            d.bonusProduction = production;
+            d.bonusScience = science;
+            d.bonusInfluence = influence;
+            d.defenseBonus = defense;
+            d.visionBonus = vision;
+            d.protocultureUpkeep = upkeep;
+            d.description = description;
+            return d;
+        }
+
+        public static AbilityDefinition CreateAbility(
+            string id,
+            string name,
+            string description = "")
+        {
+            var a = ScriptableObject.CreateInstance<AbilityDefinition>();
+            a.abilityId = id;
+            a.displayName = name;
+            a.description = description;
+            return a;
+        }
+
         public static TechDefinition CreateTech(
             string techId,
             string displayName,
