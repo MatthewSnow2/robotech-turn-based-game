@@ -248,13 +248,14 @@ namespace Robotech.TBS.Bootstrap
                 }
             }
 
-            // Recompute visibility from all RDF units for demo
+            // Recompute visibility from all faction units
             fog.ClearVisibility();
             if (UnitRegistry.Instance != null)
             {
-                foreach (var unit in UnitRegistry.Instance.GetUnitsByFaction(Faction.RDF))
+                foreach (var unit in UnitRegistry.Instance.GetAllUnits())
                 {
-                    fog.RevealFrom(unit.coord, unit.definition.vision);
+                    if (unit != null && unit.definition != null)
+                        fog.RevealFrom(unit.coord, unit.definition.vision);
                 }
             }
 
@@ -268,17 +269,24 @@ namespace Robotech.TBS.Bootstrap
                 if (techManager != null && sciDelta > 0) techManager.AddScience(sciDelta);
             }
 
-            // Apply unit upkeep (protoculture)
+            // Apply per-turn tech bonus income (protoculture, science, production)
+            if (resources != null)
+            {
+                resources.ApplyIncome();
+            }
+
+            // Apply unit upkeep per-faction (only deduct RDF upkeep from player resources)
             if (resources != null && UnitRegistry.Instance != null)
             {
-                int totalUpkeep = 0;
-                foreach (var unit in UnitRegistry.Instance.GetAllUnits())
+                int rdfUpkeep = 0;
+                foreach (var unit in UnitRegistry.Instance.GetUnitsByFaction(Faction.RDF))
                 {
                     if (unit != null && unit.definition != null)
-                        totalUpkeep += unit.definition.upkeepProtoculture;
+                        rdfUpkeep += unit.definition.upkeepProtoculture;
                 }
-                if (totalUpkeep > 0)
-                    resources.ApplyUpkeep(totalUpkeep);
+                if (rdfUpkeep > 0)
+                    resources.ApplyUpkeep(rdfUpkeep);
+                // TODO: When Zentradi gets its own ResourceManager, deduct Zentradi upkeep there
             }
         }
     }

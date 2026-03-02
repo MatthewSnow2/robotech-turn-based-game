@@ -418,7 +418,7 @@ namespace Robotech.TBS.AI
             if (mapGen == null) return false;
 
             var terrain = mapGen.GetTerrain(coord);
-            return Map.MapRules.IsPassable(unit.definition, terrain);
+            return MapRules.IsPassable(unit.definition, terrain);
         }
 
         #endregion

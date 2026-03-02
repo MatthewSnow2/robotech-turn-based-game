@@ -335,10 +335,10 @@ namespace Robotech.TBS.UI
             researchText.alignment = TextAnchor.UpperLeft;
             researchText.color = Color.white;
             researchText.text = "Research: None";
-            var lblRT = rGO.GetComponent<RectTransform>();
-            lblRT.anchorMin = new Vector2(0.01f, 0.85f);
-            lblRT.anchorMax = new Vector2(0.33f, 0.98f);
-            lblRT.offsetMin = Vector2.zero; lblRT.offsetMax = Vector2.zero;
+            var resRT = rGO.GetComponent<RectTransform>();
+            resRT.anchorMin = new Vector2(0.01f, 0.85f);
+            resRT.anchorMax = new Vector2(0.33f, 0.98f);
+            resRT.offsetMin = Vector2.zero; resRT.offsetMax = Vector2.zero;
 
             // City panel (top-left under research)
             var cpGO = new GameObject("CityPanelText");
@@ -409,9 +409,9 @@ namespace Robotech.TBS.UI
 
             // Enable/disable build buttons based on tech unlock and city availability
             if (buildArmoredBtn != null)
-                buildArmoredBtn.interactable = techManager != null && techManager.hasArmoredVeritech && HasCity(Faction.RDF);
+                buildArmoredBtn.interactable = techManager != null && techManager.IsUnitUnlocked(bootstrap?.rdfArmoredVeritech) && HasCity(Faction.RDF);
             if (buildSuperBtn != null)
-                buildSuperBtn.interactable = techManager != null && techManager.hasSuperVeritech && HasCity(Faction.RDF);
+                buildSuperBtn.interactable = techManager != null && techManager.IsUnitUnlocked(bootstrap?.rdfSuperVeritech) && HasCity(Faction.RDF);
             if (buildZentPodBtn != null)
                 buildZentPodBtn.interactable = HasCity(Faction.Zentradi);
             if (buildZentOfficerBtn != null)
@@ -427,8 +427,8 @@ namespace Robotech.TBS.UI
                 }
                 else
                 {
-                    if (techManager != null && !techManager.hasArmoredVeritech) hint += "RDF: Unlock Armored Veritech tech.\n";
-                    if (techManager != null && !techManager.hasSuperVeritech) hint += "RDF: Unlock Super Veritech tech.\n";
+                    if (techManager != null && !techManager.IsUnitUnlocked(bootstrap?.rdfArmoredVeritech)) hint += "RDF: Unlock Armored Veritech tech.\n";
+                    if (techManager != null && !techManager.IsUnitUnlocked(bootstrap?.rdfSuperVeritech)) hint += "RDF: Unlock Super Veritech tech.\n";
                 }
                 if (!HasCity(Faction.Zentradi))
                 {
@@ -475,14 +475,15 @@ namespace Robotech.TBS.UI
         bool IsPassable(UnitDefinition def, HexCoord c)
         {
             var t = mapGen.GetTerrain(c);
-            return Map.MapRules.IsPassable(def, t);
+            return MapRules.IsPassable(def, t);
         }
 
         bool IsTileFree(HexCoord c)
         {
-            foreach (var u in FindObjectsOfType<Unit>())
+            // Use UnitRegistry for O(1) lookup instead of FindObjectsOfType
+            if (UnitRegistry.Instance != null)
             {
-                if (u.coord.q == c.q && u.coord.r == c.r) return false;
+                return !UnitRegistry.Instance.IsOccupied(c);
             }
             return true;
         }
@@ -562,8 +563,8 @@ namespace Robotech.TBS.UI
             string hint = "";
             if (!HasCity(Faction.RDF)) hint += "RDF: Found a city to build advanced units.\n";
             else {
-                if (techManager != null && !techManager.hasArmoredVeritech) hint += "RDF: Unlock Armored Veritech tech.\n";
-                if (techManager != null && !techManager.hasSuperVeritech) hint += "RDF: Unlock Super Veritech tech.\n";
+                if (techManager != null && !techManager.IsUnitUnlocked(bootstrap?.rdfArmoredVeritech)) hint += "RDF: Unlock Armored Veritech tech.\n";
+                if (techManager != null && !techManager.IsUnitUnlocked(bootstrap?.rdfSuperVeritech)) hint += "RDF: Unlock Super Veritech tech.\n";
             }
             if (!HasCity(Faction.Zentradi)) hint += "Zentradi: Found a city to build pods.\n";
             return hint.TrimEnd();
@@ -583,8 +584,8 @@ namespace Robotech.TBS.UI
             string req = "";
             if (def.faction == Faction.RDF)
             {
-                if (def == bootstrap?.rdfArmoredVeritech && techManager != null && !techManager.hasArmoredVeritech) req = "Requires Armored Veritech tech.";
-                if (def == bootstrap?.rdfSuperVeritech && techManager != null && !techManager.hasSuperVeritech) req = "Requires Super Veritech tech.";
+                if (def == bootstrap?.rdfArmoredVeritech && techManager != null && !techManager.IsUnitUnlocked(bootstrap.rdfArmoredVeritech)) req = "Requires Armored Veritech tech.";
+                if (def == bootstrap?.rdfSuperVeritech && techManager != null && !techManager.IsUnitUnlocked(bootstrap.rdfSuperVeritech)) req = "Requires Super Veritech tech.";
                 if (!HasCity(Faction.RDF)) req = "Requires an RDF city.";
             }
             else

@@ -5,6 +5,7 @@ using Robotech.TBS.Hex;
 using Robotech.TBS.Map;
 using Robotech.TBS.Units;
 using Robotech.TBS.Systems;
+using Robotech.TBS.Bootstrap;
 
 namespace Robotech.TBS.Cities
 {
@@ -27,14 +28,14 @@ namespace Robotech.TBS.Cities
         public readonly Queue<ProductionItem> productionQueue = new();
         public ProductionItem CurrentItem => productionQueue.Count > 0 ? productionQueue.Peek() : null;
 
-        public void Init(string name, HexCoord c, float hexSize, Faction faction)
+        public void Init(string cityLabel, HexCoord c, float hexSize, Faction faction)
         {
-            cityName = name;
+            cityName = cityLabel;
             coord = c;
             this.faction = faction;
             this.hexSize = hexSize;
             transform.position = coord.ToWorld(this.hexSize);
-            name = $"City_{cityName}_{coord.q}_{coord.r}";
+            gameObject.name = $"City_{cityName}_{coord.q}_{coord.r}";
         }
 
         public (int prod,int sci,int infl) GetYields()

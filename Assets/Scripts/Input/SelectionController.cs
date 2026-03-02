@@ -7,6 +7,7 @@ using Robotech.TBS.Map;
 using Robotech.TBS.Systems;
 using Robotech.TBS.Data;
 using Robotech.TBS.Combat;
+using Robotech.TBS.Core;
 
 namespace Robotech.TBS.Inputs
 {
@@ -15,6 +16,7 @@ namespace Robotech.TBS.Inputs
         public HexGrid grid;
         public MapGenerator mapGen;
         public CityManager cityManager;
+        private TurnManager turnManager;
 
         public Unit SelectedUnit { get; private set; }
         public HexCoord HoverHex { get; private set; }
@@ -40,11 +42,17 @@ namespace Robotech.TBS.Inputs
             if (grid == null) grid = FindObjectOfType<HexGrid>();
             if (mapGen == null) mapGen = FindObjectOfType<MapGenerator>();
             if (cityManager == null) cityManager = FindObjectOfType<CityManager>();
+            if (turnManager == null) turnManager = FindObjectOfType<TurnManager>();
         }
 
         void Update()
         {
             UpdateHover();
+
+            // Block all commands during AI phase
+            if (turnManager != null && turnManager.CurrentPhase != TurnManager.TurnPhase.Player)
+                return;
+
             if (UnityEngine.Input.GetMouseButtonDown(0))
             {
                 HandleLeftClick();
@@ -149,6 +157,10 @@ namespace Robotech.TBS.Inputs
 
         public void SelectUnit(Unit u)
         {
+            // Only allow selecting player-faction (RDF) units
+            if (u != null && u.definition != null && u.definition.faction != Faction.RDF)
+                return;
+
             SelectedUnit = u;
             AttackMode = false;
             RecomputeRanges();

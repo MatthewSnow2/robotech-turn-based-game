@@ -49,8 +49,8 @@ namespace Robotech.TBS.Rendering
                         var verts = GetHexVerts(center, grid.hexSize * 1.0f);
                         for (int i = 0; i < 6; i++)
                         {
-                            var dir = i; // neighbor index corresponds to edge between i and i+1
-                            var n = grid.Neighbors(c)[dir];
+                            // Calculate neighbor directly from direction offset (avoids IEnumerable indexing)
+                            var n = c + HexCoord.Neighbors[i];
                             var nOwner = grid.InBounds(n) ? cityManager.GetOwner(n) : null;
                             if (nOwner != owner)
                             {

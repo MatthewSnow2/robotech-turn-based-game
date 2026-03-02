@@ -1,6 +1,8 @@
 {
   "name": "Robotech.Tests.EditMode",
-  "references": [],
+  "references": [
+    "Robotech.Runtime"
+  ],
   "optionalUnityReferences": [
     "TestAssemblies"
   ],

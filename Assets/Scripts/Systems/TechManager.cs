@@ -20,11 +20,35 @@ namespace Robotech.TBS.Systems
         public System.Action<TechDefinition> OnTechCompleted;
         public System.Action<TechGeneration> OnEraTransition;
 
-        // Persistent unlock state for prototype (deprecated)
-        public bool hasArmoredVeritech;
-        public bool hasSuperVeritech;
-        public bool hasECMBonus;
-        public bool hasAABonus;
+        // Data-driven unlock queries (replaces deprecated boolean flags)
+
+        /// <summary>
+        /// Check if a specific unit has been unlocked by any researched technology.
+        /// </summary>
+        public bool IsUnitUnlocked(UnitDefinition unitDef)
+        {
+            if (unitDef == null) return false;
+            foreach (var tech in researchedTechs)
+            {
+                if (tech.unlocksUnits != null && tech.unlocksUnits.Contains(unitDef))
+                    return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Check if a specific ability has been unlocked by any researched technology.
+        /// </summary>
+        public bool IsAbilityUnlocked(AbilityDefinition abilityDef)
+        {
+            if (abilityDef == null) return false;
+            foreach (var tech in researchedTechs)
+            {
+                if (tech.unlocksAbilities != null && tech.unlocksAbilities.Contains(abilityDef))
+                    return true;
+            }
+            return false;
+        }
 
         public void AddScience(int amount)
         {
@@ -45,12 +69,6 @@ namespace Robotech.TBS.Systems
         void CompleteCurrentTech()
         {
             if (currentResearch == null) return;
-
-            // Set persistent flags (legacy support)
-            if (currentResearch.unlockArmoredVeritech) hasArmoredVeritech = true;
-            if (currentResearch.unlockSuperVeritech) hasSuperVeritech = true;
-            if (currentResearch.unlockECMBonus) hasECMBonus = true;
-            if (currentResearch.unlockAABonus) hasAABonus = true;
 
             // Add to researched techs
             if (!researchedTechs.Contains(currentResearch))
