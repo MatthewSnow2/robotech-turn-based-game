@@ -177,3 +177,7 @@ secrets.*
 # Test files that might have credentials
 **/test-credentials.*
 **/test-secrets.*
+
+# Build/test artifacts (added 2026-04-20 cleanup)
+TestLog.txt
+/bin/
