@@ -127,7 +127,7 @@ namespace Robotech.TBS.Inputs
                         var target = FindUnitAt(HoverHex);
                         if (target != null && target.definition.faction != SelectedUnit.definition.faction)
                         {
-                            CombatResolver.ResolveAttack(SelectedUnit, target);
+                            CombatResolver.ResolveAttack(SelectedUnit, target, mapGen);
                             // After attack, recompute ranges
                             RecomputeRanges();
                         }
@@ -197,8 +197,8 @@ namespace Robotech.TBS.Inputs
                 var enemies = UnitRegistry.Instance.GetEnemyUnits(SelectedUnit.definition.faction);
                 foreach (var enemy in enemies)
                 {
-                    // Use CombatResolver.CanAttack for proper range validation
-                    if (CombatResolver.CanAttack(SelectedUnit, enemy))
+                    // Use CombatResolver.CanAttack for proper range validation (includes LoS)
+                    if (CombatResolver.CanAttack(SelectedUnit, enemy, mapGen))
                     {
                         AttackableHexes.Add(enemy.coord);
                     }

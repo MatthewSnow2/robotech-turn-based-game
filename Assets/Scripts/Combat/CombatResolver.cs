@@ -1,6 +1,7 @@
 using UnityEngine;
 using Robotech.TBS.Units;
 using Robotech.TBS.Data;
+using Robotech.TBS.Map;
 
 namespace Robotech.TBS.Combat
 {
@@ -29,8 +30,9 @@ namespace Robotech.TBS.Combat
         /// </summary>
         /// <param name="attacker">The attacking unit</param>
         /// <param name="target">The target unit</param>
+        /// <param name="mapGen">Map generator for terrain lookups (LoS + cover). Pass null to skip both.</param>
         /// <returns>Combat result with damage dealt and outcome</returns>
-        public static CombatResult ResolveAttack(Unit attacker, Unit target)
+        public static CombatResult ResolveAttack(Unit attacker, Unit target, MapGenerator mapGen)
         {
             // Null checks
             if (attacker == null || target == null)
@@ -43,6 +45,10 @@ namespace Robotech.TBS.Combat
             // Check weapons
             if (attacker.definition.weapons == null || attacker.definition.weapons.Length == 0)
                 return CombatResult.Failed("Attacker has no weapons");
+
+            // Line of sight (skipped if mapGen is null)
+            if (!LineOfSight.HasLineOfSight(attacker.coord, target.coord, mapGen))
+                return CombatResult.Failed("No line of sight (terrain blocks)");
 
             // Calculate distance for range checks
             int distance = attacker.coord.Distance(target.coord);
@@ -106,19 +112,32 @@ namespace Robotech.TBS.Combat
                     return CombatResult.Failed($"No weapons in range (distance: {distance})");
             }
 
+            // Apply target terrain cover (flat damage reduction before armor in TakeDamage)
+            int terrainDefense = 0;
+            if (mapGen != null)
+            {
+                var targetTerrain = mapGen.GetTerrain(target.coord);
+                if (targetTerrain != null) terrainDefense = targetTerrain.defenseBonus;
+            }
+            int damageAfterCover = Mathf.Max(0, totalDamage - terrainDefense);
+            if (terrainDefense > 0 && totalDamage > 0)
+            {
+                Debug.Log($"Cover: target terrain defense -{terrainDefense} ({totalDamage} -> {damageAfterCover})");
+            }
+
             // Apply damage
             int targetHPBefore = target.currentHP;
-            target.TakeDamage(totalDamage);
+            target.TakeDamage(damageAfterCover);
 
             // Check if target was destroyed (currentHP <= 0 triggers Destroy)
             bool destroyed = target.currentHP <= 0;
 
-            Debug.Log($"Combat: {attacker.definition.displayName} dealt {totalDamage} damage to {target.definition.displayName} ({targetHPBefore} -> {target.currentHP} HP){(destroyed ? " - DESTROYED" : "")}");
+            Debug.Log($"Combat: {attacker.definition.displayName} dealt {damageAfterCover} damage to {target.definition.displayName} ({targetHPBefore} -> {target.currentHP} HP){(destroyed ? " - DESTROYED" : "")}");
 
             return new CombatResult
             {
                 Succeeded = true,
-                TotalDamage = totalDamage,
+                TotalDamage = damageAfterCover,
                 HitsLanded = totalHits,
                 TargetDestroyed = destroyed
             };
@@ -127,7 +146,8 @@ namespace Robotech.TBS.Combat
         /// <summary>
         /// Check if an attack is valid without resolving it.
         /// </summary>
-        public static bool CanAttack(Unit attacker, Unit target)
+        /// <param name="mapGen">Map generator for LoS check. Pass null to skip the LoS guard.</param>
+        public static bool CanAttack(Unit attacker, Unit target, MapGenerator mapGen)
         {
             if (attacker == null || target == null) return false;
             if (attacker.definition.faction == target.definition.faction) return false;
@@ -136,12 +156,19 @@ namespace Robotech.TBS.Combat
             int distance = attacker.coord.Distance(target.coord);
 
             // Check if any weapon can reach
+            bool anyInRange = false;
             foreach (var weapon in attacker.definition.weapons)
             {
                 if (weapon != null && distance >= weapon.rangeMin && distance <= weapon.rangeMax)
-                    return true;
+                {
+                    anyInRange = true;
+                    break;
+                }
             }
-            return false;
+            if (!anyInRange) return false;
+
+            // LoS check
+            return LineOfSight.HasLineOfSight(attacker.coord, target.coord, mapGen);
         }
 
         /// <summary>

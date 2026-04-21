@@ -55,10 +55,12 @@ A Unity-based turn-based strategy game (Civ6-inspired) set in the Robotech Macro
 ## Upcoming Phases
 
 ### Phase 6: Ranged Combat & Abilities
-- [ ] Line-of-sight calculations
-- [ ] Cover/terrain defense bonuses
+- [x] Line-of-sight calculations (HexMath.LineBetween + LineOfSight.HasLineOfSight; blocks on terrain.providesElevation)
+- [x] Cover/terrain defense bonuses (target hex defenseBonus applied as flat damage reduction in CombatResolver before TakeDamage)
 - [ ] Unit abilities implementation (overwatch, transform, etc.)
 - [ ] Counter-attack mechanics
+
+Notes for next pieces: fog of war is still pure-distance (does not respect LoS yet — deliberate, scope-limited). Forests and urban terrain do not block sight currently; only providesElevation (Hills, Mountains) does.
 
 ### Phase 7: City & Economy Depth
 - [ ] District placement mechanics

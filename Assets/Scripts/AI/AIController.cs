@@ -256,7 +256,7 @@ namespace Robotech.TBS.AI
             if (target == null) return false;
 
             // Execute attack
-            var result = CombatResolver.ResolveAttack(unit, target);
+            var result = CombatResolver.ResolveAttack(unit, target, mapGen);
             if (result.Succeeded)
             {
                 Debug.Log($"[AI] {unit.definition.displayName} attacked {target.definition.displayName} for {result.TotalDamage} damage");
@@ -277,7 +277,7 @@ namespace Robotech.TBS.AI
             foreach (var enemy in enemies)
             {
                 if (enemy == null) continue;
-                if (!CombatResolver.CanAttack(attacker, enemy)) continue;
+                if (!CombatResolver.CanAttack(attacker, enemy, mapGen)) continue;
 
                 float score = EvaluateTarget(attacker, enemy);
                 if (score > bestScore)
