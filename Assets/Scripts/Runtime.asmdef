@@ -2,7 +2,7 @@
   "name": "Robotech.Runtime",
   "references": [],
   "includePlatforms": [],
-  "excludePlatforms": ["Editor"],
+  "excludePlatforms": [],
   "allowUnsafeCode": false,
   "overrideReferences": false,
   "precompiledReferences": [],
