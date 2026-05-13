@@ -46,7 +46,7 @@ namespace Robotech.TBS.Combat
                 ow.hasAttackedThisTurn = true;
                 ow.isOverwatching = false; // overwatch is one-shot
 
-                if (result != null && result.TargetDestroyed) return true;
+                if (result.TargetDestroyed) return true;
             }
 
             return false;
