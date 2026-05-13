@@ -59,10 +59,11 @@ A Unity-based turn-based strategy game (Civ6-inspired) set in the Robotech Macro
 ### Phase 6: Ranged Combat & Abilities (in progress)
 - [x] Line-of-sight calculations (HexMath.LineBetween + LineOfSight.HasLineOfSight; blocks on terrain.providesElevation) — piece 1, commit `abce62b`
 - [x] Cover/terrain defense bonuses (target hex defenseBonus applied as flat damage reduction in CombatResolver before TakeDamage) — piece 2, commit `abce62b`
-- [ ] Unit abilities implementation (overwatch, transform, etc.) — piece 3, **NEXT**
-- [ ] Counter-attack mechanics — piece 4
+- [x] Unit abilities — Overwatch shipped (piece 3a): `Unit.SetOverwatch` consumes movement, `OverwatchSystem.TriggerOnMove` fires reaction shots per-step in `MoveAlongPath`/`MoveTo`. `O` hotkey in SelectionController; AI uses it as a fallback action when no productive move/attack exists. EditMode tests in `Tests/EditMode/Combat/OverwatchSystemTests.cs`.
+- [ ] Unit abilities — Transform (piece 3b, deferred): Veritech mode switching needs per-mode stat blocks on `UnitDefinition` — separate data refactor.
+- [ ] Counter-attack mechanics — piece 4, **NEXT**
 
-Notes for next pieces: fog of war is still pure-distance (does not respect LoS yet — deliberate, scope-limited). Forests and urban terrain do not block sight currently; only providesElevation (Hills, Mountains) does. `AbilityDefinition` exists as a placeholder ScriptableObject; piece 3 will flesh out the runtime execution path and at least one ability (likely overwatch).
+Notes for next pieces: fog of war is still pure-distance (does not respect LoS yet — deliberate, scope-limited). Forests and urban terrain do not block sight currently; only providesElevation (Hills, Mountains) does. `Unit.MoveAlongPath` was refactored from "cost-then-teleport" to true hex-by-hex walk so overwatch can interrupt mid-path.
 
 ### Phase 7: City & Economy Depth
 - [ ] District placement mechanics

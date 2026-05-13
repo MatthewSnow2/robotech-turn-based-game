@@ -244,6 +244,19 @@ namespace Robotech.TBS.AI
                     yield return new WaitForSeconds(actionDelay);
                 }
             }
+
+            // 3. Fallback: if the unit can overwatch and still has unused movement (no productive
+            //    move or attack happened), enter overwatch instead of idling. This makes idle AI
+            //    units a genuine threat the player has to play around.
+            if (unit != null && !unit.hasAttackedThisTurn && unit.movesLeft > 0
+                && unit.definition != null && unit.definition.canOverwatch)
+            {
+                if (unit.SetOverwatch())
+                {
+                    Debug.Log($"[AI] {unit.definition.displayName} entered overwatch");
+                    yield return new WaitForSeconds(actionDelay);
+                }
+            }
         }
 
         private bool TryAttackEnemy(Unit unit)
@@ -340,8 +353,8 @@ namespace Robotech.TBS.AI
             HexCoord? bestMove = FindBestMoveToward(unit, objectivePos.Value);
             if (!bestMove.HasValue) return false;
 
-            // Execute move
-            unit.MoveTo(bestMove.Value, grid.hexSize);
+            // Execute move (pass mapGen so AI movement also draws player overwatch).
+            unit.MoveTo(bestMove.Value, grid.hexSize, mapGen);
             Debug.Log($"[AI] {unit.definition.displayName} moved to {bestMove.Value} (fallback)");
             return true;
         }

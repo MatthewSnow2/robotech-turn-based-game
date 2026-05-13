@@ -66,6 +66,25 @@ namespace Robotech.TBS.Inputs
             {
                 TryFoundCity();
             }
+            // Hotkey: Overwatch (O)
+            if (UnityEngine.Input.GetKeyDown(KeyCode.O))
+            {
+                TrySetOverwatch();
+            }
+        }
+
+        void TrySetOverwatch()
+        {
+            if (SelectedUnit == null) return;
+            if (SelectedUnit.definition == null || !SelectedUnit.definition.canOverwatch) return;
+            // Player can only overwatch their own units (faction guard).
+            if (SelectedUnit.definition.faction != Faction.RDF) return;
+            if (SelectedUnit.SetOverwatch())
+            {
+                // Refresh derived selection state — no more reachable hexes for this unit this turn.
+                ReachableHexes.Clear();
+                CurrentPath.Clear();
+            }
         }
 
         void UpdateHover()

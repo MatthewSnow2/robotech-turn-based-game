@@ -376,7 +376,13 @@ namespace Robotech.TBS.UI
 
         void OnUnitSelected(Unit u)
         {
-            unitInfoText.text = $"{u.definition.displayName} | HP {u.currentHP}/{u.definition.maxHP} | MV {u.movesLeft}";
+            string baseLine = $"{u.definition.displayName} | HP {u.currentHP}/{u.definition.maxHP} | MV {u.movesLeft}";
+            string abilityLine = "";
+            if (u.definition.canOverwatch)
+            {
+                abilityLine = u.isOverwatching ? "  [OVERWATCH ACTIVE]" : "  [O] Overwatch";
+            }
+            unitInfoText.text = baseLine + abilityLine;
         }
 
         void OnSelectionCleared()
@@ -387,6 +393,12 @@ namespace Robotech.TBS.UI
 
         void Update()
         {
+            // Keep unit info line in sync with mutable state (movement spent, overwatch toggled).
+            if (selector != null && selector.SelectedUnit != null && unitInfoText != null)
+            {
+                OnUnitSelected(selector.SelectedUnit);
+            }
+
             // Enable/disable Found City based on selection
             if (foundCityButton != null && selector != null)
             {

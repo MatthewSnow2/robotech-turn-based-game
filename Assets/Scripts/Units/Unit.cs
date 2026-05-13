@@ -4,6 +4,7 @@ using Robotech.TBS.Hex;
 using Robotech.TBS.Data;
 using Robotech.TBS.Systems;
 using Robotech.TBS.Map;
+using Robotech.TBS.Combat;
 
 namespace Robotech.TBS.Units
 {
@@ -14,6 +15,10 @@ namespace Robotech.TBS.Units
         public HexCoord coord;
         public int currentHP;
         public int movesLeft;
+
+        // Per-turn ability state (reset in NewTurn).
+        public bool isOverwatching;
+        public bool hasAttackedThisTurn;
 
         // Tech upgrade tracking
         private List<TechDefinition> appliedTechUpgrades = new();
@@ -50,6 +55,22 @@ namespace Robotech.TBS.Units
         public void NewTurn()
         {
             movesLeft = definition.movement + movementBonus;
+            isOverwatching = false;
+            hasAttackedThisTurn = false;
+        }
+
+        /// <summary>
+        /// Enter overwatch: unit will react-fire at the first enemy that moves into its range+LoS
+        /// during the enemy phase. Consumes remaining movement points. Requires canOverwatch.
+        /// Returns true if overwatch was set.
+        /// </summary>
+        public bool SetOverwatch()
+        {
+            if (definition == null || !definition.canOverwatch) return false;
+            if (hasAttackedThisTurn) return false;
+            isOverwatching = true;
+            movesLeft = 0;
+            return true;
         }
 
         /// <summary>
@@ -77,9 +98,9 @@ namespace Robotech.TBS.Units
         }
 
         /// <summary>
-        /// Move to an adjacent hex (legacy single-step movement).
+        /// Move to an adjacent hex (legacy single-step movement). Triggers overwatch when mapGen is supplied.
         /// </summary>
-        public void MoveTo(HexCoord target, float hexSize)
+        public void MoveTo(HexCoord target, float hexSize, MapGenerator mapGen = null)
         {
             var oldCoord = coord;
             coord = target;
@@ -91,63 +112,63 @@ namespace Robotech.TBS.Units
             {
                 UnitRegistry.Instance.UpdatePosition(this, oldCoord, coord);
             }
+
+            // Reaction shots from enemy overwatchers
+            if (mapGen != null)
+            {
+                OverwatchSystem.TriggerOnMove(this, mapGen);
+            }
         }
 
         /// <summary>
-        /// Move the unit along a path, deducting movement costs based on terrain.
+        /// Move the unit along a path hex-by-hex, paying terrain cost and triggering enemy overwatch
+        /// reactions after each step. If overwatch destroys the mover mid-path, traversal aborts.
         /// </summary>
         /// <param name="path">List of hex coordinates to traverse (including start position)</param>
         /// <param name="hexSize">Size of hexes for world position calculation</param>
-        /// <param name="mapGen">Map generator for terrain cost lookup</param>
-        /// <returns>True if movement was successful, false if path was invalid</returns>
+        /// <param name="mapGen">Map generator for terrain cost lookup and overwatch LoS</param>
+        /// <returns>True if at least one step was taken, false if path was invalid or unaffordable</returns>
         public bool MoveAlongPath(List<HexCoord> path, float hexSize, MapGenerator mapGen)
         {
             if (path == null || path.Count < 2) return false;
             if (movesLeft <= 0) return false;
-
-            // Verify path starts at current position
             if (path[0].q != coord.q || path[0].r != coord.r) return false;
 
-            var oldCoord = coord;
-            int totalCost = 0;
+            int stepsTaken = 0;
 
-            // Calculate and deduct movement cost for each step
             for (int i = 1; i < path.Count; i++)
             {
-                var terrain = mapGen.GetTerrain(path[i]);
+                var stepCoord = path[i];
+                var terrain = mapGen != null ? mapGen.GetTerrain(stepCoord) : null;
                 int stepCost = Pathfinder.GetMovementCost(terrain);
 
-                if (totalCost + stepCost > movesLeft)
+                if (stepCost > movesLeft)
                 {
-                    // Can't afford this step, stop at previous position
-                    if (i > 1)
-                    {
-                        coord = path[i - 1];
-                        movesLeft -= totalCost;
-                        transform.position = coord.ToWorld(hexSize) + Vector3.up * 0.5f;
-
-                        if (UnitRegistry.Instance != null)
-                        {
-                            UnitRegistry.Instance.UpdatePosition(this, oldCoord, coord);
-                        }
-                        return true;
-                    }
-                    return false;
+                    // Can't afford this step, stop here (preserves "partial progress" semantics).
+                    break;
                 }
 
-                totalCost += stepCost;
+                var oldCoord = coord;
+                coord = stepCoord;
+                movesLeft -= stepCost;
+                transform.position = coord.ToWorld(hexSize) + Vector3.up * 0.5f;
+
+                if (UnitRegistry.Instance != null)
+                {
+                    UnitRegistry.Instance.UpdatePosition(this, oldCoord, coord);
+                }
+
+                stepsTaken++;
+
+                // Reaction shots from enemy overwatchers after entering the new hex.
+                if (mapGen != null && OverwatchSystem.TriggerOnMove(this, mapGen))
+                {
+                    // Mover destroyed mid-path — stepsTaken > 0 so still report success.
+                    return true;
+                }
             }
 
-            // Successfully traversed entire path
-            coord = path[path.Count - 1];
-            movesLeft -= totalCost;
-            transform.position = coord.ToWorld(hexSize) + Vector3.up * 0.5f;
-
-            if (UnitRegistry.Instance != null)
-            {
-                UnitRegistry.Instance.UpdatePosition(this, oldCoord, coord);
-            }
-            return true;
+            return stepsTaken > 0;
         }
 
         /// <summary>
