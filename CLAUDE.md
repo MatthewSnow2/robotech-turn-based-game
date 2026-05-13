@@ -6,9 +6,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Unity-based turn-based strategy game (Civ6-inspired) set in the Robotech Macross universe. Single-player skirmish mode with RDF vs Zentradi factions. Non-commercial fan project.
 
-**Unity Version:** 2022.3.39f1 (LTS)
+**Unity Version:** 2022.3.62f3 (LTS)
 **Platform:** Windows, mouse/keyboard
-**Status:** Design + early scaffolding phase
+**Status:** Mid-prototype. Core systems shipped (hex grid, turns, units, cities, fog, tech tree Gen 0-1, resources, basic + ranged combat, A* pathfinding, AI opponent, line-of-sight, terrain cover). Tech Tree UI and ability/counter-attack mechanics are the next major work. See `BLUEPRINT.md` for the active phase plan.
 
 ## Development Commands
 
@@ -43,7 +43,10 @@ GitHub Actions workflow runs EditMode tests on push/PR. Windows build job is sca
 **Data-Driven with ScriptableObjects**
 - All game balance in ScriptableObjects (created at runtime via factories during prototyping)
 - Data layer (definitions) separated from system layer (MonoBehaviours) and view layer (rendering/UI)
-- Definition types: `UnitDefinition`, `WeaponDefinition`, `TerrainType`, `TechDefinition`, `DistrictDefinition`
+- Definition types: `UnitDefinition`, `WeaponDefinition`, `TerrainType`, `TechDefinition` (+ `TechCategory`, `TechGeneration` enums), `DistrictDefinition`, `AbilityDefinition` (placeholder, full impl pending)
+
+**Registry Pattern**
+- `UnitRegistry` (Assets/Scripts/Systems/UnitRegistry.cs): singleton, O(1) lookups by position and by faction. Replaces `FindObjectsOfType` calls in hot paths (UIShell, combat, AI).
 
 **Factory Pattern**
 - `DefinitionsFactory` (Assets/Scripts/Bootstrap/DefinitionsFactory.cs): Creates ScriptableObject definitions at runtime
@@ -72,19 +75,21 @@ GitHub Actions workflow runs EditMode tests on push/PR. Windows build job is sca
 
 **Turn Management** (Assets/Scripts/Core/TurnManager.cs)
 - Turn cycle: Player phase → AI phase → increment turn counter → repeat
-- Events fired at each phase transition
-- AI currently is a stub that immediately ends its phase
+- Events fired at each phase transition (`OnTurnStarted`, `OnPhaseChanged`)
+- AI phase runs `AIController.ExecuteAIPhase()` coroutine; configurable `aiThinkingDelay`
+- Non-recursive `EndPhase`: coroutine-based phase transitions (no stack risk)
 
 **Hex Grid** (Assets/Scripts/Hex/)
 - `HexCoord`: Axial coordinate struct with distance, neighbors, range calculations
-- `HexGrid`: Grid management, pathfinding infrastructure, bounds checking
-- `HexMath`: World position conversion, coordinate math
+- `HexGrid`: Grid management, bounds checking
+- `HexMath`: World position conversion, coordinate math, `LineBetween(a, b)` cube-lerp hex line
+- `Pathfinder`: A* pathfinding with terrain movement costs, returns `PathResult` (path + total cost + reachable hexes for a budget). Honors impassable terrain and other units.
 - Grid sizes: 40x24 (small), 60x36 (medium), 80x48 (large)
 
 **Unit System** (Assets/Scripts/Units/Unit.cs)
 - Tracks HP, armor, movement points, position, faction, definition reference
-- Movement: Currently simplified to 1 hex per action (infrastructure supports multi-step pathfinding)
-- Events for unit state changes
+- Movement: multi-hex via A*. `MoveTo(target, hexSize)` single-step, `MoveAlongPath(path, hexSize, mapGen)` consumes movement points per hex using terrain cost.
+- Events for unit state changes (HP, position, death)
 
 **City/Settlement System** (Assets/Scripts/Cities/)
 - `City.cs`: Territory ownership, production queue, district system, yield calculation
@@ -95,19 +100,24 @@ GitHub Actions workflow runs EditMode tests on push/PR. Windows build job is sca
 
 **Resource Management** (Assets/Scripts/Systems/ResourceManager.cs)
 - Tracked resources: Protoculture (upkeep), Materials (production), Credits, Science
-- Applied per-turn from city yields
-- Unit upkeep deducted from Protoculture each turn
+- `ApplyIncome()` runs per-turn from city yields plus tech bonuses (protoculture/science/production)
+- Unit upkeep deducted from Protoculture each turn, per faction
 
 **Technology Tree** (Assets/Scripts/Systems/TechManager.cs)
-- Linear research (one tech at a time)
-- Science accumulates until tech completes
-- Unlocks unit types and gameplay features
+- Linear research (one tech at a time), prerequisite-gated
+- Tracks `allTechs` / `availableTechs` / `researchedTechs` and `currentGeneration`
+- Era transitions on completing critical-path techs (Gen 0 → Gen 1 → ...)
+- Tech effects: stat bonuses applied to ResourceManager + Unit on completion
+- Unit production validated against `UnitDefinition.requiredTech`
+- Gen 0-1 (16 techs) defined in `GameBootstrap`; Gen 2-4 + Tech Tree UI pending
 
-**Combat System** (Assets/Scripts/Combat/CombatResolver.cs)
-- Static resolver: `ResolveAttack(attacker, target)`
-- Weapon-based damage with salvo accuracy rolls
-- Armor reduces damage before HP loss
-- Currently: adjacent-only range (expandable to weapon ranges)
+**Combat System** (Assets/Scripts/Combat/)
+- `CombatResolver`: static resolver — `ResolveAttack(attacker, target, mapGen)`, `CanAttack(attacker, target, mapGen)`, `GetMaxRange(unit)`
+- Weapon-based damage with salvo accuracy rolls; armor reduces damage before HP loss
+- Ranged combat: respects each weapon's max range and `GetMaxRange(unit)` across its loadout
+- `LineOfSight.HasLineOfSight(a, b, mapGen)`: walks `HexMath.LineBetween`; intermediate hexes block if `terrain.providesElevation` (Hills, Mountains). Same-hex and adjacent always true. Predicate overload available for unit tests without scene wiring.
+- Terrain cover: target hex `defenseBonus` applied as flat damage reduction before `Unit.TakeDamage`
+- No friendly fire; tech bonuses apply to attacker damage
 
 **Fog of War** (Assets/Scripts/Fog/FogOfWarSystem.cs)
 - Dual-state visibility:
@@ -122,8 +132,18 @@ GitHub Actions workflow runs EditMode tests on push/PR. Windows build job is sca
 
 **Input/Selection** (Assets/Scripts/Input/SelectionController.cs)
 - Mouse-based unit selection via raycast
-- Calculates reachable hexes (movement range) and attackable hexes
+- Calculates reachable hexes (A* with movement budget) and attackable hexes (range + LoS)
+- Player-phase + faction guards prevent input during AI phase or on enemy units
 - Hotkey 'B': Found city (if settler unit selected)
+
+**AI Opponent** (Assets/Scripts/AI/AIController.cs)
+- Runs during AI phase as a coroutine; orchestrates movement, combat, city production, tech research
+- Targeting: prioritizes weak/valuable enemy units
+- Movement: A* pathfinding toward nearest enemy or objective; respects terrain costs and LoS
+- City management: queues unit production based on tech availability
+- Tech research: selects critical-path or bonus techs
+- Emits `OnAIPhaseComplete` event when done; `aiFaction` configurable (default Zentradi)
+- Note: settler founding logic not implemented (deferred)
 
 ### Namespace Organization
 
@@ -131,17 +151,19 @@ GitHub Actions workflow runs EditMode tests on push/PR. Windows build job is sca
 Robotech.TBS
 ├── Bootstrap       # Initialization, factories (GameBootstrap, DefinitionsFactory, UnitFactory)
 ├── Core            # Core game logic (TurnManager)
-├── Hex             # Hex math & grid (HexCoord, HexGrid, HexMath)
+├── Hex             # Hex math & grid (HexCoord, HexGrid, HexMath, Pathfinder)
 ├── Map             # Map generation (MapGenerator)
 ├── Units           # Unit entity system (Unit)
 ├── Cities          # City system (City)
-├── Systems         # Game systems (ResourceManager, TechManager, CityManager, MapRules)
-├── Combat          # Combat mechanics (CombatResolver)
+├── Systems         # Game systems (ResourceManager, TechManager, CityManager, UnitRegistry, MapRules)
+├── Combat          # Combat mechanics (CombatResolver, LineOfSight)
 ├── Inputs          # Input handling (SelectionController)
-├── Fog             # Fog of war (FogOfWarSystem)
+├── Fog             # Fog of war (FogOfWarSystem) — pure-distance; does not yet honor LoS
 ├── Rendering       # Visualization (HexDebugRenderer)
-├── Data            # Data definitions (UnitDefinition, WeaponDefinition, etc.)
-├── UI              # UI components (UIShell - stub)
+├── Data            # Data definitions (UnitDefinition, WeaponDefinition, TerrainType, TechDefinition,
+│                   #   TechCategory, TechGeneration, DistrictDefinition, AbilityDefinition)
+├── UI              # UI components (UIShell — ~700 lines of procedural debug HUD)
+├── AI              # AI opponent (AIController)
 └── Debug           # Development utilities (DevHotkeys)
 ```
 
@@ -167,8 +189,9 @@ Single runtime assembly: `Robotech.Runtime` (Assets/Scripts/Bootstrap/Runtime.as
 **Combat Mechanics:**
 - Based on Robotech Tactics (Palladium) adapted for TBS
 - No friendly fire
-- Stateless resolver (static utility class)
-- Simple accuracy model (expandable with range/cover modifiers)
+- Stateless resolver (static utility class); requires `MapGenerator` for LoS + terrain cover lookups
+- Salvo accuracy rolls; tech bonuses applied to attacker damage
+- Line-of-sight blocked only by terrain with `providesElevation=true` (Hills, Mountains). Forests/urban do not block sight in current iteration.
 
 **Hex Coordinate System:**
 - Pointy-top orientation (not flat-top)

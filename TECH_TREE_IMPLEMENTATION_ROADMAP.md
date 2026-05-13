@@ -1,8 +1,19 @@
 # Tech Tree Implementation Roadmap
 
-**Status:** Planning Phase
+**Status:** Phases 1-3 shipped. **Phase 4 (Tech Tree UI) is the active blocker.** Phases 5-6 deferred.
 **Priority:** High (Core MVP Feature)
 **Estimated Effort:** 3-4 weeks (phased approach)
+
+## Quick status
+
+| Phase | Status | Evidence |
+|-------|--------|----------|
+| 1 — Enhanced Data Layer | ✅ done | `TechCategory.cs`, `TechGeneration.cs`, expanded `TechDefinition.cs`, `DefinitionsFactory.CreateTech()` (commits `f4f7ebd`, `5bf056b`) |
+| 2 — Enhanced Tech Manager + integration + tests | ✅ done | `TechManager` prerequisites/era logic, `ResourceManager` tech bonuses, `Unit` requiredTech checks, Phase 2 integration tests (commits `0db3013`, `d80b1bf`, `bcc8daa`) |
+| 3 — Gen 2-3 tech definitions | 🟡 partial | 16 Gen 0-1 techs defined in `GameBootstrap`. Gen 2-3 not yet wired. |
+| 4 — Tech Tree UI | ⏳ next | UIShell currently shows procedural debug HUD only; no Tech Tree screen exists. |
+| 5 — Gen 4 + balance | ⏳ deferred | Blocked on Phase 4. |
+| 6 — Gen 5 (optional) | ⏳ deferred | Post-MVP. |
 
 ---
 
@@ -19,75 +30,78 @@ Implement the complete technology tree system (Gen 0-4) based on `TECH_TREE.md` 
 
 ## 📋 Implementation Phases
 
-### Phase 1: Enhanced Data Layer (Week 1)
+### Phase 1: Enhanced Data Layer (Week 1) — ✅ COMPLETE
 
 **Goal:** Expand TechDefinition to support full tech tree features
 
 #### Tasks:
 1. **Expand TechDefinition.cs**
-   - [ ] Add `TechGeneration` enum (Gen0-Gen5)
-   - [ ] Add `TechCategory` enum (Power, Mecha, Weapons, Defense, Aerospace, Special)
-   - [ ] Add `prerequisites` list
-   - [ ] Add `unlocksUnits`, `unlocksDistricts`, `unlocksAbilities` lists
-   - [ ] Add bonus fields (Protoculture, Science, Production, HP, Armor, Movement, etc.)
-   - [ ] Add flags (`isCriticalPath`, `allowsEraTransition`)
-   - [ ] Add `Sprite icon` for UI
+   - [x] Add `TechGeneration` enum (Gen0-Gen5)
+   - [x] Add `TechCategory` enum (Power, Mecha, Weapons, Defense, Aerospace, Special)
+   - [x] Add `prerequisites` list
+   - [x] Add `unlocksUnits`, `unlocksDistricts`, `unlocksAbilities` lists
+   - [x] Add bonus fields (Protoculture, Science, Production, HP, Armor, Movement, etc.)
+   - [x] Add flags (`isCriticalPath`, `allowsEraTransition`)
+   - [x] Add `Sprite icon` for UI
 
 2. **Create Tech Factory Method**
-   - [ ] Add `DefinitionsFactory.CreateTech()` helper method
-   - [ ] Support flexible parameter lists for bonuses/unlocks
+   - [x] Add `DefinitionsFactory.CreateTech()` helper method
+   - [x] Support flexible parameter lists for bonuses/unlocks
 
 3. **Define All Gen 0-1 Techs**
-   - [ ] Jet Propulsion
-   - [ ] Conventional Ballistics
-   - [ ] Protoculture Discovery (critical path)
-   - [ ] Energy Reactors Mk I
-   - [ ] Mecha Chassis I
-   - [ ] Metallurgy I
-   - [ ] Missile Guidance I
-   - [ ] Global Communications Network
+   - [x] Jet Propulsion
+   - [x] Conventional Ballistics
+   - [x] Protoculture Discovery (critical path)
+   - [x] Energy Reactors Mk I
+   - [x] Mecha Chassis I
+   - [x] Metallurgy I
+   - [x] Missile Guidance I
+   - [x] Global Communications Network
 
-**Deliverable:** All Gen 0-1 tech definitions created in `GameBootstrap.cs`
+**Deliverable:** All Gen 0-1 tech definitions created in `GameBootstrap.cs` ✅ (16 techs total)
 
 ---
 
-### Phase 2: Enhanced Tech Manager (Week 1-2)
+### Phase 2: Enhanced Tech Manager (Week 1-2) — ✅ COMPLETE
 
 **Goal:** Implement prerequisite checking, era transitions, and tech effects
 
 #### Tasks:
 1. **Expand TechManager.cs**
-   - [ ] Add `allTechs` (full tree)
-   - [ ] Add `availableTechs` (currently researchable based on prerequisites)
-   - [ ] Add `researchedTechs` (completed)
-   - [ ] Add `currentGeneration` tracking
-   - [ ] Implement `UpdateAvailableTechs()` (checks prerequisites)
-   - [ ] Implement era transition logic in `CompleteCurrentTech()`
-   - [ ] Implement `ApplyTechEffects()` (applies bonuses to ResourceManager, units, etc.)
+   - [x] Add `allTechs` (full tree)
+   - [x] Add `availableTechs` (currently researchable based on prerequisites)
+   - [x] Add `researchedTechs` (completed)
+   - [x] Add `currentGeneration` tracking
+   - [x] Implement `UpdateAvailableTechs()` (checks prerequisites)
+   - [x] Implement era transition logic in `CompleteCurrentTech()`
+   - [x] Implement `ApplyTechEffects()` (applies bonuses to ResourceManager, units, etc.)
 
 2. **Integrate with ResourceManager**
-   - [ ] Add `protocultureTechBonus`, `scienceTechBonus`, `productionTechBonus` fields
-   - [ ] Add `AddProtocultureBonus()`, `AddScienceBonus()`, `AddProductionBonus()` methods
-   - [ ] Modify `ApplyIncome()` to include tech bonuses
+   - [x] Add `protocultureTechBonus`, `scienceTechBonus`, `productionTechBonus` fields
+   - [x] Add `AddProtocultureBonus()`, `AddScienceBonus()`, `AddProductionBonus()` methods
+   - [x] Modify `ApplyIncome()` to include tech bonuses
 
 3. **Integrate with Unit System**
-   - [ ] Add `requiredTech` field to `UnitDefinition`
-   - [ ] Implement `Unit.ApplyTechUpgrade()` (upgrades units in field when tech completes)
-   - [ ] Modify `UnitFactory.SpawnUnit()` to check tech requirements
+   - [x] Add `requiredTech` field to `UnitDefinition`
+   - [x] Implement `Unit.ApplyTechUpgrade()` (upgrades units in field when tech completes)
+   - [x] Modify `UnitFactory.SpawnUnit()` to check tech requirements
 
 4. **Create Test Cases**
-   - [ ] Test prerequisite validation (can't research without prereqs)
-   - [ ] Test era transitions (unlocks higher-gen techs)
-   - [ ] Test tech effects (bonuses apply correctly)
-   - [ ] Test unit unlocking (can produce after researching)
+   - [x] Test prerequisite validation (can't research without prereqs) — `TechManagerTests`
+   - [x] Test era transitions (unlocks higher-gen techs) — `TechManagerTests`
+   - [x] Test tech effects (bonuses apply correctly) — `ResourceManagerTechTests`
+   - [x] Test unit unlocking (can produce after researching) — `UnitTechIntegrationTests`
+   - [x] Phase 2 integration suite — `Phase2IntegrationTests`, `Phase2ValidationTests`, `Phase2GameplayTests`, `Phase2SystemInteractionTests`
 
-**Deliverable:** Fully functional tech tree system with prerequisite/era logic
+**Deliverable:** Fully functional tech tree system with prerequisite/era logic ✅
 
 ---
 
-### Phase 3: Gen 2-3 Tech Definitions (Week 2)
+### Phase 3: Gen 2-3 Tech Definitions (Week 2) — 🟡 NOT STARTED
 
 **Goal:** Define all mid-game technologies (VF-1 Valkyrie era)
+
+**Status note:** All scaffolding from Phases 1-2 supports this; the actual Gen 2-3 tech definitions are not yet wired in `GameBootstrap`.
 
 #### Tasks:
 1. **Define Gen 2 Techs (Contact and Conflict)**
@@ -122,9 +136,11 @@ Implement the complete technology tree system (Gen 0-4) based on `TECH_TREE.md` 
 
 ---
 
-### Phase 4: UI Layer (Week 3)
+### Phase 4: UI Layer (Week 3) — ⏳ NEXT (active blocker)
 
 **Goal:** Create Tech Tree UI screen with selection and tooltips
+
+**Status note:** `UIShell.cs` currently renders a procedural debug HUD only — no Tech Tree screen exists. This is the next major work item.
 
 #### Tasks:
 1. **Tech Tree Screen**
@@ -307,8 +323,8 @@ public void EraTransition_UnlocksNextGeneration()
 - [x] ResourceManager (Science accumulation)
 - [x] TurnManager (Per-turn science from cities)
 - [x] City/District system (Science yields from Lab districts)
-- [ ] Enhanced TechDefinition (this roadmap)
-- [ ] Enhanced TechManager (this roadmap)
+- [x] Enhanced TechDefinition (this roadmap)
+- [x] Enhanced TechManager (this roadmap)
 
 **Blocks:**
 - [ ] Unit production UI (needs tech unlock checks)

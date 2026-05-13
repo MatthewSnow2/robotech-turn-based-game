@@ -1,8 +1,10 @@
 # Robotech TBS - Development Blueprint
 
-## Project Status: Early Prototype
+## Project Status: Mid-Prototype (Phase 6 in progress)
 
 A Unity-based turn-based strategy game (Civ6-inspired) set in the Robotech Macross universe. Single-player skirmish mode with RDF vs Zentradi factions.
+
+**Unity:** 2022.3.62f3 LTS. **Active work:** Phase 6 (Ranged Combat & Abilities) — pieces 1+2 (LoS, terrain cover) shipped 2026-04-20; pieces 3 (unit abilities) and 4 (counter-attack) are next.
 
 ---
 
@@ -54,13 +56,13 @@ A Unity-based turn-based strategy game (Civ6-inspired) set in the Robotech Macro
 
 ## Upcoming Phases
 
-### Phase 6: Ranged Combat & Abilities
-- [x] Line-of-sight calculations (HexMath.LineBetween + LineOfSight.HasLineOfSight; blocks on terrain.providesElevation)
-- [x] Cover/terrain defense bonuses (target hex defenseBonus applied as flat damage reduction in CombatResolver before TakeDamage)
-- [ ] Unit abilities implementation (overwatch, transform, etc.)
-- [ ] Counter-attack mechanics
+### Phase 6: Ranged Combat & Abilities (in progress)
+- [x] Line-of-sight calculations (HexMath.LineBetween + LineOfSight.HasLineOfSight; blocks on terrain.providesElevation) — piece 1, commit `abce62b`
+- [x] Cover/terrain defense bonuses (target hex defenseBonus applied as flat damage reduction in CombatResolver before TakeDamage) — piece 2, commit `abce62b`
+- [ ] Unit abilities implementation (overwatch, transform, etc.) — piece 3, **NEXT**
+- [ ] Counter-attack mechanics — piece 4
 
-Notes for next pieces: fog of war is still pure-distance (does not respect LoS yet — deliberate, scope-limited). Forests and urban terrain do not block sight currently; only providesElevation (Hills, Mountains) does.
+Notes for next pieces: fog of war is still pure-distance (does not respect LoS yet — deliberate, scope-limited). Forests and urban terrain do not block sight currently; only providesElevation (Hills, Mountains) does. `AbilityDefinition` exists as a placeholder ScriptableObject; piece 3 will flesh out the runtime execution path and at least one ability (likely overwatch).
 
 ### Phase 7: City & Economy Depth
 - [ ] District placement mechanics
@@ -104,9 +106,10 @@ Notes for next pieces: fog of war is still pure-distance (does not respect LoS y
 - Zone of control mechanics not implemented
 
 ### Code Quality
-- UIShell.cs is 600+ lines - needs refactoring
+- UIShell.cs is ~706 lines (procedural debug HUD) - needs refactoring and replacement with proper UI screens (Tech Tree, City, Unit info)
 - Some magic numbers should be in configuration
 - Legacy Input System (deprecated in Unity 2022.3)
+- No Tech Tree UI yet; tech selection is code-only — see `TECH_TREE_IMPLEMENTATION_ROADMAP.md` Phase 4 (active blocker)
 
 ---
 
